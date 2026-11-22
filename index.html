@@ -144,6 +144,13 @@
   const seenMessageIds=new Set();
   const maps=['Sandstone','Rust','Province','Zone 9','Breeze'];
   const $ = id => document.getElementById(id);
+  // Единая функция закрытия модальных окон. Используется в регистрации, входе, Party и других диалогах.
+  function closeModal(){
+    const modalRoot = $('modalRoot');
+    if(modalRoot) modalRoot.replaceChildren();
+  }
+  // Inline onclick-обработчики в разметке вызывают closeModal() через window.
+  window.closeModal = closeModal;
   function getOrCreateGuestId(){let v=sessionStorage.getItem('sm_guest');if(!v){v='g'+Math.random().toString(36).slice(2,12);sessionStorage.setItem('sm_guest',v)}return v}
   function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
   function setAvatar(el,url,name){el.classList.remove('avatar-fallback');el.textContent='';if(url&&url.startsWith('emoji:')){el.removeAttribute('src');el.classList.add('avatar-fallback');el.textContent=url.slice(6);return}if(url){el.src=url;el.onerror=()=>{el.removeAttribute('src');el.classList.add('avatar-fallback');el.textContent=(name||'S').slice(0,1).toUpperCase()}}else{el.removeAttribute('src');el.classList.add('avatar-fallback');el.textContent=(name||'S').slice(0,1).toUpperCase()}}
