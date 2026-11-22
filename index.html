@@ -147,7 +147,32 @@
   // Единая функция закрытия модальных окон. Используется в регистрации, входе, Party и других диалогах.
   function closeModal(){
     const modalRoot = $('modalRoot');
-    if(modalRoot) modalRoot.replaceChildren();
+    const registrationModal = $('registrationModal');
+    const loginModal = $('loginModal');
+    if(registrationModal) registrationModal.style.display = 'none';
+    if(loginModal) loginModal.style.display = 'none';
+    if(modalRoot) { modalRoot.replaceChildren(); modalRoot.classList.remove('open','active','visible'); }
+    document.body.classList.remove('modal-open','registration-open');
+  }
+  // Завершает авторизацию единообразно: сначала синхронизирует профиль, затем гарантированно убирает оверлей.
+  async function finishRegistrationAndRefresh(successMessage){
+    try { await loadPlayer(); } catch(e) { console.warn('Profile refresh after auth:', e); }
+    closeModal();
+    renderProfile();
+    setAvatar($('queueAvatar'), player.avatar, player.name);
+    $('queueNick').textContent = player.registered ? player.standoff_nickname : 'Зарегистрируй игровой профиль';
+    $('queueButton').disabled = !player.registered || !!player.is_referee;
+    $('queueButton').textContent = player.is_referee ? 'РЕЖИМ СУДЬИ' : (player.registered ? 'НАЙТИ МАТЧ' : 'ЗАВЕРШИ РЕГИСТРАЦИЮ');
+    if (player.registered) {
+      $('accountPasswordButton')?.classList.remove('hidden');
+      showPage('profile');
+      renderParty();
+      showToast(successMessage);
+      await refreshParty();
+      await handlePartyStartParam();
+    } else {
+      openRegistration();
+    }
   }
   // Inline onclick-обработчики в разметке вызывают closeModal() через window.
   window.closeModal = closeModal;
@@ -210,6 +235,7 @@
   window.previewRegAvatar=async(input)=>{try{chosenAvatar=await compressImage(input.files[0],256);$('regPreview').src=chosenAvatar;document.querySelectorAll('#regPresets .avatar-choice').forEach(b=>b.classList.remove('active'))}catch(e){alert(e.message)}};
   window.openRegistration=()=>{
     if(!$('modalRoot'))return;
+    $('modalRoot').style.display='';
     $('modalRoot').innerHTML=`<div class="modal-back" id="registrationModal"><div class="modal" style="max-height:88dvh;overflow:auto"><div class="eyebrow">PLAYER VERIFICATION</div><h3>Регистрация игрока</h3><p class="muted small">Заполни игровой профиль Standoff 2. Без ника, цифрового ID и пароля доступ к матчмейкингу закрыт.</p><label class="field"><span>Никнейм в Standoff 2</span><input id="regNick" maxlength="24" placeholder="Твой игровой ник" value="${esc(player.standoff_nickname)}" autocomplete="nickname"></label><label class="field"><span>Цифровой ID игрока</span><input id="regGameId" inputmode="numeric" pattern="[0-9]*" maxlength="20" placeholder="Только цифры" value="${esc(player.standoff_id)}"></label><label class="field"><span>Пароль (минимум 4 символа)</span><input id="regPassword" type="password" minlength="4" maxlength="128" placeholder="Придумай пароль" autocomplete="new-password"></label><div class="field"><span>Аватар профиля</span><img id="regPreview" src="${player.avatar&&!player.avatar.startsWith('emoji:')?player.avatar:''}" style="width:58px;height:58px;object-fit:cover;border-radius:15px;background:#303039" onerror="this.style.display='none'"><label class="file-pick">Загрузить с телефона<input type="file" accept="image/*" style="display:none" onchange="previewRegAvatar(this)"></label><div id="regPresets" class="avatar-picker">${presetMarkup('player',chosenAvatar)}</div></div><div class="reg-required">* Никнейм, ID и пароль обязательны. Пароль хранится в Supabase в виде bcrypt-хеша, не открытым текстом.</div><div class="modal-actions"><button class="btn btn-primary btn-block" onclick="saveRegistration()">СОХРАНИТЬ И ПРОДОЛЖИТЬ</button></div><button class="btn btn-ghost btn-block" style="margin-top:9px" onclick="openLoginModal()">Уже есть аккаунт? Войти по нику и паролю</button><div class="muted small" id="regError" style="margin-top:9px" aria-live="polite"></div></div></div>`;
     if(player.avatar){chosenAvatar=player.avatar;if(!player.avatar.startsWith('emoji:'))$('regPreview').src=player.avatar;else chosenAvatar=player.avatar}
   };
@@ -230,11 +256,11 @@
       const {data,error}=await db.rpc('sm_register_player',{p_telegram_id:player.id,p_init_data:tg.initData,p_nick:nick,p_game_id:gameId,p_username:player.username,p_avatar_url:chosenAvatar||'emoji:⚡',p_password:password});
       if(error)throw error;
       player.name=nick;player.standoff_nickname=nick;player.standoff_id=gameId;player.avatar=chosenAvatar||'emoji:⚡';player.registered=true;
-      renderProfile();setAvatar($('queueAvatar'),player.avatar,player.name);$('queueNick').textContent=player.standoff_nickname;$('queueButton').disabled=!!player.is_referee;$('queueButton').textContent=player.is_referee?'РЕЖИМ СУДЬИ':'НАЙТИ МАТЧ';
-      closeModal();showToast('Профиль зарегистрирован.');await loadPlayer();await refreshParty();await handlePartyStartParam();
+      await finishRegistrationAndRefresh('Профиль зарегистрирован.');
     }catch(e){const message=errorText(e);err.textContent=message.includes('Этот никнейм уже занят')?'Этот никнейм уже занят, придумайте другой':message;}
   };
   window.openLoginModal=()=>{
+    $('modalRoot').style.display='';
     $('modalRoot').innerHTML=`<div class="modal-back" id="loginModal"><div class="modal"><div class="eyebrow">ACCOUNT LOGIN</div><h3>Вход в существующий аккаунт</h3><p class="muted small">Введи никнейм и пароль профиля. После проверки пароля профиль и связанные игровые записи будут перенесены на текущий Telegram. Если этот Telegram уже привязан к другому зарегистрированному профилю, перенос будет отклонён.</p><label class="field"><span>Никнейм</span><input id="loginNick" maxlength="24" placeholder="Твой игровой ник" autocomplete="username"></label><label class="field"><span>Пароль</span><input id="loginPassword" type="password" maxlength="128" placeholder="Пароль" autocomplete="current-password"></label><button class="btn btn-primary btn-block" onclick="loginExistingAccount()">ВОЙТИ</button><button class="btn btn-ghost btn-block" style="margin-top:8px" onclick="openRegistration()">Назад к регистрации</button><div class="status" id="loginError" aria-live="polite"></div></div></div>`;
   };
   window.loginExistingAccount=async()=>{
@@ -245,7 +271,7 @@
     try{
       const {data,error}=await db.rpc('sm_login_player',{p_telegram_id:player.id,p_init_data:tg.initData,p_nick:nick,p_password:password});
       if(error)throw error;
-      closeModal();await loadPlayer();if(player.registered){showToast('Вход выполнен. Профиль загружен.');await refreshParty();await handlePartyStartParam()}else openRegistration();
+      await finishRegistrationAndRefresh('Вход выполнен. Профиль загружен.');
     }catch(e){err.textContent=errorText(e)}
   };
   window.openPasswordSetup=()=>{
