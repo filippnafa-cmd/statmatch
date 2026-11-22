@@ -24,6 +24,9 @@
     .team-detail-head{display:flex;align-items:center;gap:12px;margin-bottom:12px}.team-roster{display:grid;gap:7px;margin:12px 0}.team-member{display:flex;align-items:center;gap:9px;padding:8px;background:#202027;border-radius:10px;font-size:12px}.team-member small{color:var(--muted);margin-left:auto}.team-controls{display:flex;gap:8px;flex-wrap:wrap}.result-preview{width:100%;max-height:220px;object-fit:contain;background:#101015;border:1px solid var(--line);border-radius:11px;margin-top:9px}.result-choice{display:flex;gap:8px}.result-choice .btn{flex:1}.result-choice .selected{border-color:var(--orange);background:#3a2118;color:#ff9a66}
 
     .party-card{padding:17px}.party-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.party-head h3{font-size:15px;margin:0;font-weight:950}.party-count{font-size:11px;color:var(--muted);background:#292932;padding:6px 9px;border-radius:20px}.party-slots{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}.party-slot{min-width:0;text-align:center;background:transparent;color:var(--white);padding:0;border-radius:13px}.party-avatar-wrap{width:min(58px,100%);aspect-ratio:1;border-radius:50%;margin:0 auto 7px;position:relative;background:#24242d;border:2px solid #3a3a45;display:grid;place-items:center;overflow:visible}.party-slot.leader .party-avatar-wrap{border-color:#ffb84d;box-shadow:0 0 0 3px #ffb84d22}.party-avatar{width:100%;height:100%;border-radius:50%;object-fit:cover;overflow:hidden}.party-plus{font-size:27px;color:#ff8a4b;font-weight:500}.party-crown{position:absolute;right:-4px;top:-7px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:#ffb84d;color:#271707;font-size:12px;border:2px solid #17171c}.party-level{position:absolute;bottom:-5px;right:-5px;background:var(--orange);border:2px solid #17171c;color:#fff;border-radius:10px;padding:1px 5px;font-size:9px;font-weight:900}.party-nick{font-size:10px;font-weight:850;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.party-role{font-size:9px;color:var(--muted);display:block;margin-top:2px}.party-slot.empty .party-avatar-wrap{border-style:dashed;background:#1d1d24}.party-slot:active{transform:scale(.97)}.party-status{font-size:11px;color:var(--muted);margin-top:13px;line-height:1.45}.party-member-actions{display:flex;gap:8px;margin-top:14px}.party-member-actions .btn{flex:1}.party-code{font-size:25px;letter-spacing:3px;font-weight:1000;color:#ff9a66;text-align:center;padding:14px;background:#111116;border:1px dashed #65331f;border-radius:13px;margin:10px 0}.party-hint{font-size:11px;color:var(--muted);line-height:1.5}
+
+    .tabbar:has(#tabAdmin:not(.hidden)){grid-template-columns:repeat(3,1fr)}
+    .admin-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.admin-log{font:11px/1.55 ui-monospace,monospace;color:#b9e9cb;background:#101015;border:1px solid #292932;border-radius:10px;padding:10px;min-height:36px;margin-top:10px;white-space:pre-wrap;overflow-wrap:anywhere}.ban-screen{text-align:center;padding:30px 20px;margin-top:10vh}.ban-icon{font-size:42px;margin-bottom:12px}.ban-countdown{font-size:22px;font-weight:950;color:#ff8a4b;padding:16px;background:#101015;border-radius:12px;margin:16px 0}.observer-box{margin-top:12px;padding:11px;border:1px solid #9b83ff55;background:#221d32;border-radius:12px}.observer-title{font-size:10px;font-weight:900;letter-spacing:1px;color:#c2b3ff;margin-bottom:7px}.side-note{font-size:10px;color:var(--muted);margin-top:8px;line-height:1.45}.team-side.ct{border-color:#3678ad55;background:#15202b}.team-side.ct h4{color:#72bdff}.team-side.t{border-color:#b95d2e55;background:#2b1b15}.team-side.t h4{color:#ff9a64}
     @media(min-width:520px){.app{padding-top:24px}.page-title{font-size:30px}.card{padding:19px}}
   </style>
 </head>
@@ -71,17 +74,43 @@
   </main>
 
 
+  <main id="adminPage" class="hidden">
+    <div class="eyebrow">OWNER CONTROL</div><h1 class="page-title">Админ-панель</h1>
+    <section class="card"><div class="section-head" style="margin:0 0 10px"><h3>КОНСОЛЬ КОМАНД</h3><span>ADMIN ONLY</span></div>
+      <p class="muted small" style="line-height:1.5">Команды: <code>/ban ник часы причина</code>, <code>/unban ник</code>, <code>/elo +число ник</code>, <code>/elo -число ник</code>.</p>
+      <label class="field"><span>Команда</span><input id="adminCommandInput" maxlength="300" placeholder="/ban Player123 24 нарушение правил" onkeydown="if(event.key==='Enter')runAdminCommand()"></label>
+      <button class="btn btn-primary btn-block" onclick="runAdminCommand()">ВЫПОЛНИТЬ КОМАНДУ</button>
+      <div class="status" id="adminStatus" aria-live="polite"></div>
+    </section>
+    <section class="card"><div class="section-head" style="margin:0 0 10px"><h3>БЫСТРЫЕ ДЕЙСТВИЯ</h3><span>SUPABASE</span></div>
+      <label class="field"><span>Ник игрока</span><input id="adminTargetNick" maxlength="32" placeholder="Игровой ник"></label>
+      <label class="field"><span>Срок бана (часы)</span><input id="adminBanHours" type="number" min="1" max="8760" value="24"></label>
+      <label class="field"><span>Причина бана</span><input id="adminBanReason" maxlength="240" placeholder="Причина"></label>
+      <div class="admin-actions"><button class="btn btn-secondary" onclick="adminQuick('ban')">ЗАБАНИТЬ</button><button class="btn btn-ghost" onclick="adminQuick('unban')">РАЗБАНИТЬ</button></div>
+      <label class="field"><span>Изменение ELO (+ / −)</span><input id="adminEloDelta" type="number" step="1" placeholder="Например: 50 или -25"></label>
+      <button class="btn btn-secondary btn-block" onclick="adminQuick('elo')">ИЗМЕНИТЬ ELO</button>
+      <div id="adminLog" class="admin-log" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <main id="blockedPage" class="hidden">
+    <section class="card ban-screen"><div class="ban-icon">⛔</div><div class="eyebrow">ACCOUNT RESTRICTED</div><h1 class="page-title">Доступ временно ограничен</h1>
+      <p id="banReasonText" class="muted">Причина не указана.</p><div class="ban-countdown" id="banCountdown">Проверяем срок блокировки…</div>
+      <p class="muted small">Поиск матчей и участие в Party недоступны до окончания блокировки.</p>
+    </section>
+  </main>
+
   <main id="lobbyPage" class="hidden">
     <div class="lobby-top"><div><div class="eyebrow">MATCH IN PROGRESS</div><h1 class="page-title" style="margin:5px 0 0">Лобби матча</h1></div><span class="pill" id="matchPill">5 VS 5</span></div>
-    <section class="card"><div class="section-head" style="margin:0 0 10px"><h3>СОСТАВЫ</h3><span id="matchIdLabel">Матч</span></div><div class="teams"><div class="team-side a"><h4>КОМАНДА A</h4><div id="teamAList"></div></div><div class="team-side b"><h4>КОМАНДА B</h4><div id="teamBList"></div></div></div></section>
-    <section class="card"><div class="section-head" style="margin:0 0 8px"><h3>ВЫБОР КАРТЫ</h3><span id="mapTurn">Капитан A</span></div><div class="map-progress" id="mapProgress">По очереди исключайте карты, пока не останется одна</div><div class="map-list" id="mapList"></div><p class="muted small" id="mapResult" style="margin:10px 0 0"></p></section>
-    <section class="card"><div class="section-head" style="margin:0 0 10px"><h3>ДАННЫЕ ХОСТА ДЛЯ ВХОДА В STANDOFF 2</h3><span>TEAM A CAPTAIN</span></div><p class="muted small" style="line-height:1.5;margin:0 0 10px">В Standoff 2 нет универсального кода комнаты. Найди капитана Команды A в игре и добавь его по игровому ID.</p><div class="host-data"><div><span class="muted small">Игровой ник хоста</span><b id="hostNick">Загрузка…</b></div><div><span class="muted small">Игровой ID хоста</span><b id="hostGameId">—</b></div></div><button class="btn btn-secondary btn-block" style="margin-top:10px" onclick="copyHostId()">СКОПИРОВАТЬ ID ХОСТА</button><label class="field" style="margin-top:14px"><span>Прямая ссылка-приглашение из Standoff 2 (если доступна)</span><input id="lobbyInviteUrl" type="url" maxlength="500" placeholder="Вставь ссылку-приглашение"></label><button class="btn btn-ghost btn-block" onclick="saveLobbyInvite()">СОХРАНИТЬ ССЫЛКУ</button><div class="status" id="hostStatus"></div><button id="openLobbyInvite" class="btn btn-secondary btn-block hidden" style="margin-top:8px" onclick="openLobbyInvite()">ОТКРЫТЬ ПРИГЛАШЕНИЕ</button></section>
+    <section class="card"><div class="section-head" style="margin:0 0 10px"><h3>СОСТАВЫ</h3><span id="matchIdLabel">Матч</span></div><div class="teams"><div class="team-side a ct"><h4>СПЕЦНАЗ (CT)</h4><div id="teamAList"></div></div><div class="team-side b t"><h4>ТЕРРОРИСТЫ (T)</h4><div id="teamBList"></div></div></div><div id="observerSlot" class="observer-box hidden"></div><div id="mySideNotice" class="notice" style="margin:10px 0 0">Твоя сторона будет указана здесь.</div><p class="side-note">Лобби создаёт Капитан Спецназа (CT) с турнирными настройками 5x5 — без изменения гравитации, скорости и HP. Заходи только за указанную сторону.</p></section>
+    <section class="card"><div class="section-head" style="margin:0 0 8px"><h3>ВЫБОР КАРТЫ</h3><span id="mapTurn">Капитан CT</span></div><div class="map-progress" id="mapProgress">По очереди исключайте карты, пока не останется одна</div><div class="map-list" id="mapList"></div><p class="muted small" id="mapResult" style="margin:10px 0 0"></p></section>
+    <section class="card"><div class="section-head" style="margin:0 0 10px"><h3>ДАННЫЕ ХОСТА ДЛЯ ВХОДА В STANDOFF 2</h3><span>CT HOST / REFEREE</span></div><p class="muted small" style="line-height:1.5;margin:0 0 10px">В Standoff 2 нет универсального кода комнаты. Лобби создаёт Капитан Спецназа (CT) с турнирными настройками 5x5 (без изменения гравитации/скорости/ХП). Все 10 игроков должны зайти за назначенную сторону CT или T. Если в матче есть судья, хостом назначается он.</p><div class="host-data"><div><span class="muted small">Игровой ник хоста</span><b id="hostNick">Загрузка…</b></div><div><span class="muted small">Игровой ID хоста</span><b id="hostGameId">—</b></div></div><button class="btn btn-secondary btn-block" style="margin-top:10px" onclick="copyHostId()">СКОПИРОВАТЬ ID ХОСТА</button><label class="field" style="margin-top:14px"><span>Прямая ссылка-приглашение из Standoff 2 (если доступна)</span><input id="lobbyInviteUrl" type="url" maxlength="500" placeholder="Вставь ссылку-приглашение"></label><button class="btn btn-ghost btn-block" onclick="saveLobbyInvite()">СОХРАНИТЬ ССЫЛКУ</button><div class="status" id="hostStatus"></div><button id="openLobbyInvite" class="btn btn-secondary btn-block hidden" style="margin-top:8px" onclick="openLobbyInvite()">ОТКРЫТЬ ПРИГЛАШЕНИЕ</button></section>
     <section class="card"><div class="section-head" style="margin:0 0 10px"><h3>ЧАТ МАТЧА</h3><span>LIVE</span></div><div class="chat-box" id="chatMessages"></div><div class="chat-send"><input id="chatInput" maxlength="300" placeholder="Сообщение команде..." onkeydown="if(event.key==='Enter')sendChat()"><button class="btn btn-primary" onclick="sendChat()">➤</button></div></section>
-    <section class="card" id="matchResultCard"><div class="section-head" style="margin:0 0 10px"><h3>ПРОВЕРКА РЕЗУЛЬТАТА ЧЕРЕЗ ИИ</h3><span>VISION AI</span></div><p class="muted small" style="margin:0 0 11px">Загрузи скриншот итоговой таблицы Standoff 2. ИИ распознает ники и счёт, сопоставит игроков с составами A/B и отправит подтверждённый результат в Supabase. Если изображение нечёткое или составы не совпадают, ELO не изменится.</p><label class="file-pick">📷 ЗАГРУЗИТЬ СКРИНШОТ ИТОГОВОЙ ТАБЛИЦЫ<input id="matchScreenshot" type="file" accept="image/*" style="display:none" onchange="previewMatchScreenshot(this)"></label><img id="matchScreenshotPreview" class="result-preview hidden" alt="Скриншот результата"><div class="status" id="resultUploadStatus">Скриншот ещё не прикреплён</div><button class="btn btn-primary btn-block" id="confirmResultButton" style="margin-top:10px" onclick="uploadAndFinishMatch()" disabled>РАСПОЗНАТЬ СЧЁТ И ЗАСЧИТАТЬ РЕЗУЛЬТАТ</button><div class="status" id="resultStatus"></div><div id="testMatchAction" class="hidden" style="margin-top:14px;padding-top:13px;border-top:1px solid var(--line)"><p class="muted small">В этом лобби есть тестовые боты. Тестовый матч можно закрыть отдельно — без начисления ELO и без объявления победителя.</p><button class="btn btn-secondary btn-block" onclick="finishTestMatch()">ЗАВЕРШИТЬ ТЕСТОВЫЙ МАТЧ</button></div></section>
+    <section class="card" id="matchResultCard"><div class="section-head" style="margin:0 0 10px"><h3>ПРОВЕРКА РЕЗУЛЬТАТА ЧЕРЕЗ ИИ</h3><span>VISION AI</span></div><p class="muted small" style="margin:0 0 11px">Загрузи скриншот итоговой таблицы Standoff 2. ИИ распознает ники и счёт, сопоставит игроков со сторонами CT/T и отправит подтверждённый результат в Supabase. Если изображение нечёткое или составы не совпадают, ELO не изменится.</p><label class="file-pick">📷 ЗАГРУЗИТЬ СКРИНШОТ ИТОГОВОЙ ТАБЛИЦЫ<input id="matchScreenshot" type="file" accept="image/*" style="display:none" onchange="previewMatchScreenshot(this)"></label><img id="matchScreenshotPreview" class="result-preview hidden" alt="Скриншот результата"><div class="status" id="resultUploadStatus">Скриншот ещё не прикреплён</div><button class="btn btn-primary btn-block" id="confirmResultButton" style="margin-top:10px" onclick="uploadAndFinishMatch()" disabled>РАСПОЗНАТЬ СЧЁТ И ЗАСЧИТАТЬ РЕЗУЛЬТАТ</button><div class="status" id="resultStatus"></div><div id="testMatchAction" class="hidden" style="margin-top:14px;padding-top:13px;border-top:1px solid var(--line)"><p class="muted small">В этом лобби есть тестовые боты. Тестовый матч можно закрыть отдельно — без начисления ELO и без объявления победителя.</p><button class="btn btn-secondary btn-block" onclick="finishTestMatch()">ЗАВЕРШИТЬ ТЕСТОВЫЙ МАТЧ</button></div></section>
   </main>
 </div>
 
-<nav class="tabs"><div class="tabbar"><button class="tab active" id="tabProfile" onclick="showPage('profile')"><span class="ico">◈</span>Профиль</button><button class="tab" id="tabPlay" onclick="showPage('play')"><span class="ico">⚔</span>Играть</button></div></nav>
+<nav class="tabs"><div class="tabbar"><button class="tab active" id="tabProfile" onclick="showPage('profile')"><span class="ico">◈</span>Профиль</button><button class="tab" id="tabPlay" onclick="showPage('play')"><span class="ico">⚔</span>Играть</button><button class="tab hidden" id="tabAdmin" onclick="showPage('admin')"><span class="ico">♛</span>Админ</button></div></nav>
 <div id="modalRoot"></div><div id="smToast" class="sm-toast hidden" role="alert"><button aria-label="Закрыть" onclick="document.getElementById('smToast').classList.add('hidden')">×</button><span id="smToastText"></span></div>
 
 <script>
@@ -106,11 +135,11 @@
     name: [tgUser?.first_name, tgUser?.last_name].filter(Boolean).join(' ') || 'Игрок StatMatch',
     username: tgUser?.username || 'player',
     avatar: tgUser?.photo_url || '', standoff_nickname:'', standoff_id:'', registered:false,
-    elo: 1000, matches: 0, wins: 0, kills: 0, deaths: 0, team: null
+    elo: 1000, matches: 0, wins: 0, kills: 0, deaths: 0, team: null, is_admin:false, is_referee:false, ban_until:null, ban_reason:null
   };
   let inQueue=false, currentMatch=null, queueTimer=null, lobbyTimer=null, chatChannel=null, currentMapVotes=[], queueBusy=false, lobbyPollBusy=false;
   let isSubmittingTeam=false, matchScreenshotFile=null, matchScreenshotUrl=null, matchMembers=[];
-  let party=null, partyMembers=[], partyTimer=null, partyBusy=false, partyStartHandled=false;
+  let party=null, partyMembers=[], partyTimer=null, partyBusy=false, partyStartHandled=false, banTimer=null, isBlocked=false;
   const seenMessageIds=new Set();
   const maps=['Sandstone','Rust','Province','Zone 9','Breeze'];
   const $ = id => document.getElementById(id);
@@ -120,7 +149,7 @@
   function levelFor(elo){return Math.max(1,Math.min(10,Math.floor((elo-500)/200)+1))}
   function renderProfile(){
     $('headerName').textContent=player.name.split(' ')[0];setAvatar($('headerAvatar'),player.avatar,player.name);setAvatar($('profileAvatar'),player.avatar,player.name);
-    $('profileName').textContent=player.name;$('profileHandle').textContent='@'+player.username;$('gameIdentity').textContent=player.registered?`Standoff 2: ${player.standoff_nickname} · ID ${player.standoff_id}`:'Standoff 2: не зарегистрирован';
+    $('profileName').textContent=player.name;$('profileHandle').textContent='@'+player.username;$('gameIdentity').textContent=player.registered?`Standoff 2: ${player.standoff_nickname} · ID ${player.standoff_id}${player.is_referee?' · Наблюдатель/судья':''}`:'Standoff 2: не зарегистрирован';
     const lvl=levelFor(player.elo);$('levelBadge').textContent=lvl;$('levelLabel').textContent=`Уровень ${lvl} · ${['Новичок','Боец','Стрелок','Ветеран','Элита','Мастер','Эксперт','Легенда','Чемпион','Легенда+'][lvl-1]}`;
     $('levelFill').style.width=((player.elo%200)/2)+'%';$('eloValue').innerHTML=`${player.elo.toLocaleString('ru-RU')} <span style="font-size:12px;color:#ff7938">ELO</span>`;
     $('eloTier').textContent=lvl<=2?'ROOKIE':lvl<=4?'RISING':lvl<=6?'ELITE':lvl<=8?'MASTER':'LEGEND';$('eloFill').style.width=Math.max(3,Math.min(100,(player.elo-500)/20))+'%';
@@ -246,9 +275,30 @@
   };
   async function loadTeams(){if(!db){$('publicTeams').innerHTML='<div class="card muted small">Подключи Supabase, чтобы увидеть команды.</div>';return}const {data,error}=await db.from('sm_teams').select('id,name,tag,logo_url,invite_code').order('created_at',{ascending:false}).limit(50);if(error){$('publicTeams').innerHTML='<div class="card muted small">'+esc(error.message)+'</div>';return}const ids=(data||[]).map(t=>t.id);let roster=[];if(ids.length){const mr=await db.from('sm_team_members').select('team_id,telegram_id,role').in('team_id',ids);if(!mr.error&&mr.data?.length){const pids=[...new Set(mr.data.map(m=>m.telegram_id))];const pr=await db.from('sm_players').select('telegram_id,standoff_nickname,display_name,avatar_url').in('telegram_id',pids);roster=mr.data.map(m=>({...m,profile:pr.data?.find(p=>p.telegram_id===m.telegram_id)}))}}$('publicTeams').innerHTML=(data||[]).map(t=>{const members=roster.filter(m=>m.team_id===t.id);const faces=members.slice(0,5).map(m=>`<span style="display:inline-flex;background:#292932;border-radius:7px;padding:4px 6px;margin:3px 3px 0 0;font-size:10px">${esc(m.profile?.standoff_nickname||m.profile?.display_name||'Игрок')}${m.role==='captain'?' ★':''}</span>`).join('');return `<div class="card team-public"><div class="team-logo" style="width:48px;height:48px;display:grid;place-items:center">${t.logo_url&&!t.logo_url.startsWith('emoji:')?`<img src="${t.logo_url}" style="width:48px;height:48px;object-fit:cover;border-radius:12px">`:esc((t.logo_url||'emoji:🛡️').slice(6)||'🛡️')}</div><div style="min-width:0;flex:1"><div style="font-weight:900">${esc(t.name)} <span class="tag-chip">[${esc(t.tag)}]</span></div><div class="muted small">${members.length} участн. · Код: ${esc(t.invite_code||'—')}</div><div>${faces}</div></div><button class="btn btn-secondary" style="padding:9px 10px" onclick="copyTeamCode('${esc(t.invite_code||'')}')">Код</button></div>`}).join('')||'<div class="card muted small">Пока нет команд. Создай первую!</div>'}
   window.copyTeamCode=async(code)=>{if(!code)return;try{await navigator.clipboard.writeText(code);alert('Код приглашения скопирован: '+code)}catch(e){alert('Код приглашения: '+code)}};
-  async function loadPlayer(){if(!db){renderProfile();$('queueButton').disabled=true;openRegistration();return}try{const {data,error}=await db.from('sm_players').select('*').eq('telegram_id',player.id).maybeSingle();if(error)throw error;if(data){Object.assign(player,{name:data.display_name||player.name,elo:data.elo??1000,matches:data.matches??0,wins:data.wins??0,kills:data.kills??0,deaths:data.deaths??0,standoff_nickname:data.standoff_nickname||'',standoff_id:data.standoff_id||'',avatar:data.avatar_url||player.avatar,registered:!!(data.standoff_nickname&&data.standoff_id)});}else player.registered=false}catch(e){console.warn('Player load:',e.message);player.registered=false}renderProfile();setAvatar($('queueAvatar'),player.avatar,player.name);$('queueNick').textContent=player.registered?player.standoff_nickname:'Зарегистрируй игровой профиль';$('queueButton').disabled=!player.registered;$('queueButton').textContent=player.registered?'НАЙТИ МАТЧ':'ЗАВЕРШИ РЕГИСТРАЦИЮ';if(!player.registered)openRegistration();else{await refreshParty();await handlePartyStartParam();startPartyPolling();}}
+  async function loadPlayer(){
+    if(!db){renderProfile();$('queueButton').disabled=true;openRegistration();return}
+    try{
+      const {data,error}=await db.from('sm_players').select('*').eq('telegram_id',player.id).maybeSingle();if(error)throw error;
+      if(data){Object.assign(player,{name:data.display_name||player.name,elo:data.elo??1000,matches:data.matches??0,wins:data.wins??0,kills:data.kills??0,deaths:data.deaths??0,standoff_nickname:data.standoff_nickname||'',standoff_id:data.standoff_id||'',avatar:data.avatar_url||player.avatar,registered:!!(data.standoff_nickname&&data.standoff_id),is_admin:!!data.is_admin,is_referee:!!data.is_referee,ban_until:data.ban_until||null,ban_reason:data.ban_reason||null});}
+      else player.registered=false;
+    }catch(e){console.warn('Player load:',e.message);player.registered=false}
+    // Владелец приложения всегда видит админку; дополнительные админы назначаются флагом в sm_players.
+    player.is_admin = player.id==='8674983342' || player.is_admin;
+    renderProfile();setAvatar($('queueAvatar'),player.avatar,player.name);$('queueNick').textContent=player.registered?player.standoff_nickname:'Зарегистрируй игровой профиль';
+    $('tabAdmin').classList.toggle('hidden',!player.is_admin);
+    if(player.ban_until && new Date(player.ban_until).getTime()>Date.now()){activateBanScreen();return}else{isBlocked=false;}
+    $('queueButton').disabled=!player.registered||player.is_referee;$('queueButton').textContent=player.is_referee?'РЕЖИМ СУДЬИ':player.registered?'НАЙТИ МАТЧ':'ЗАВЕРШИ РЕГИСТРАЦИЮ';
+    if(!player.registered)openRegistration();else{await refreshParty();await handlePartyStartParam();startPartyPolling();}
+  }
+  function activateBanScreen(){
+    isBlocked=true;inQueue=false;stopQueuePolling();if(partyTimer)clearInterval(partyTimer);partyTimer=null;
+    $('tabsNav')?.classList.add('hidden');document.querySelector('.tabs')?.classList.add('hidden');
+    $('banReasonText').textContent='Причина: '+(player.ban_reason||'не указана');showPage('blocked');
+    if(banTimer)clearInterval(banTimer);
+    const tick=()=>{const ms=new Date(player.ban_until).getTime()-Date.now();if(ms<=0){clearInterval(banTimer);banTimer=null;player.ban_until=null;isBlocked=false;document.querySelector('.tabs')?.classList.remove('hidden');showToast('Срок блокировки истёк.');$('banCountdown').textContent='Блокировка завершена';showPage('profile');return;}const h=Math.floor(ms/3600000),m=Math.floor(ms%3600000/60000),sec=Math.floor(ms%60000/1000);$('banCountdown').textContent=`До разблокировки: ${h} ч ${m} мин ${sec} сек`;};tick();banTimer=setInterval(tick,1000);
+  }
   async function upsertPlayer(){if(!db)throw new Error('Нет подключения к Supabase');const {error}=await db.from('sm_players').upsert({telegram_id:player.id,display_name:player.standoff_nickname||player.name,username:player.username,avatar_url:player.avatar,standoff_nickname:player.standoff_nickname,standoff_id:player.standoff_id,elo:player.elo},{onConflict:'telegram_id'});if(error)throw error}
-  window.showPage=(page)=>{if((page==='play'||page==='lobby')&&!player.registered){openRegistration();return}['profile','play','lobby'].forEach(p=>$(p+'Page').classList.toggle('hidden',p!==page));$('tabProfile').classList.toggle('active',page==='profile');$('tabPlay').classList.toggle('active',page==='play');if(page==='play'){refreshParty();refreshQueue()}};
+  window.showPage=(page)=>{if(isBlocked&&page!=='blocked')return;if((page==='play'||page==='lobby')&&!player.registered){openRegistration();return}['profile','play','lobby','admin','blocked'].forEach(p=>{const el=$(p+'Page');if(el)el.classList.toggle('hidden',p!==page)});$('tabProfile').classList.toggle('active',page==='profile');$('tabPlay').classList.toggle('active',page==='play');$('tabAdmin').classList.toggle('active',page==='admin');if(page==='admin'&&!player.is_admin){showPage('profile');return}if(page==='play'){refreshParty();refreshQueue()}};
   function queueStatus(text,kind=''){$('queueStatus').textContent=text;$('queueStatus').className='status '+kind}
   function showToast(message){const el=$('smToast');if(!el)return;$('smToastText').textContent=String(message||'Неизвестная ошибка');el.classList.remove('hidden')}
   function errorText(e){return e?.message||e?.details||e?.hint||String(e||'Неизвестная ошибка')}
@@ -263,6 +313,8 @@
     }catch(e){const msg='Ошибка проверки очереди Supabase: '+errorText(e);queueStatus(msg,'bad');showToast(msg)}
   }
   window.toggleQueue=async()=>{
+    if(player.is_referee){showToast('Судья не входит в боевую очередь. Его назначают наблюдателем в конкретный матч.');return}
+    if(isBlocked){showToast('Поиск недоступен: аккаунт заблокирован.');return}
     if(!player.registered){openRegistration();return}
     if(!db){const msg='Сначала подключи Supabase publishable key в index.html';queueStatus(msg,'bad');showToast(msg);return}
     if(party && party.leader_telegram_id!==player.id){showToast('Искать матч может только лидер Party.');return}
@@ -274,14 +326,11 @@
       if(party){
         const {error:partyQueueError}=await db.rpc('sm_join_party_queue',{p_party_id:party.id,p_leader_id:player.id});
         if(partyQueueError)throw new Error('Не удалось добавить Party в очередь: '+partyQueueError.message);
-        // Существующий RPC запускает штатный матчмейкер; все строки Party уже атомарно записаны с party_id.
-        const {data,error}=await db.rpc('sm_join_queue',{p_telegram_id:player.id,p_display_name:player.standoff_nickname,p_username:player.username,p_avatar_url:player.avatar});
+        // SQL-функция атомарно записывает всех участников Party, затем запускает существующий матчмейкер.
+        const {error}=await db.rpc('sm_join_party_queue',{p_party_id:party.id,p_leader_id:player.id});
         if(error)throw error;
-        const {error:tagError}=await db.from('sm_queue').update({party_id:party.id}).in('telegram_id',partyMembers.map(m=>m.telegram_id));if(tagError)throw tagError;
-        inQueue=true;button.textContent='ОТМЕНИТЬ ПОИСК';queueStatus('Вся Party добавлена в очередь. Ищем матч…','good');
-        startQueuePolling();startPartyPolling();
-        const matchId=data?.match_id||data?.[0]?.match_id||data?.id||null;
-        if(matchId)await loadMatch(matchId);else await refreshQueue();
+        inQueue=true;button.textContent='ОТМЕНИТЬ ПОИСК';queueStatus('Вся Party добавлена в очередь одной группой. Ищем матч…','good');
+        startQueuePolling();startPartyPolling();await refreshQueue();
       }else{
         const {data,error}=await db.rpc('sm_join_queue',{p_telegram_id:player.id,p_display_name:player.standoff_nickname,p_username:player.username,p_avatar_url:player.avatar});
         if(error)throw error;
@@ -327,24 +376,27 @@
     }catch(e){currentMatch=null;const msg='Не удалось открыть лобби: '+errorText(e);console.error('loadMatch',e);queueStatus(msg,'bad');showToast(msg);}
   }
   async function renderLobby(){
-    const {data:members,error}=await db.from('sm_match_players').select('telegram_id,display_name,elo,team_side,is_captain,avatar_url,team_tag').eq('match_id',currentMatch.id).order('team_side');
+    const {data:members,error}=await db.from('sm_match_players').select('telegram_id,display_name,elo,team_side,is_captain,avatar_url,team_tag,is_referee,party_id').eq('match_id',currentMatch.id).order('team_side');
     if(error)throw error;matchMembers=members||[];
-    const side=(v)=>matchMembers.filter(m=>m.team_side===v);
-    const row=m=>`<div class="player"><img src="${m.avatar_url||''}" onerror="this.style.display='none'" style="width:23px;height:23px;border-radius:7px;object-fit:cover"><span>${esc(m.team_tag?'['+m.team_tag+'] ':'')}${esc(m.display_name||'Игрок')}</span>${m.is_captain?'<span class="captain">★</span>':''}<span class="lvl">${levelFor(m.elo||1000)}</span></div>`;
+    const ids=matchMembers.map(m=>m.telegram_id);
+    let profiles=[];if(ids.length){const pr=await db.from('sm_players').select('telegram_id,standoff_nickname,standoff_id,is_referee').in('telegram_id',ids);if(pr.error)throw pr.error;profiles=pr.data||[];}
+    matchMembers=matchMembers.map(m=>{const profile=profiles.find(p=>String(p.telegram_id)===String(m.telegram_id))||{};return {...m,...profile,is_referee:!!(m.is_referee||profile.is_referee)}});
+    const side=(v)=>matchMembers.filter(m=>m.team_side===v&&!m.is_referee);
+    const row=m=>`<div class="player"><img src="${esc(m.avatar_url||'')}" onerror="this.style.display='none'" style="width:23px;height:23px;border-radius:7px;object-fit:cover"><span>${esc(m.team_tag?'['+m.team_tag+'] ':'')}${esc(m.standoff_nickname||m.display_name||'Игрок')}</span>${m.is_captain?'<span class="captain">★</span>':''}<span class="lvl">${levelFor(m.elo||1000)}</span></div>`;
     $('teamAList').innerHTML=side('A').map(row).join('')||'—';$('teamBList').innerHTML=side('B').map(row).join('')||'—';
+    const self=matchMembers.find(m=>String(m.telegram_id)===String(player.id));$('mySideNotice').textContent=!self?'Не удалось найти тебя в составе матча.':self.is_referee?'ТВОЯ РОЛЬ: НАБЛЮДАТЕЛЬ / СУДЬЯ — ты не занимаешь боевой слот.':self.team_side==='A'?'ТВОЯ СТОРОНА: СПЕЦНАЗ (CT) — заходи за CT.':self.team_side==='B'?'ТВОЯ СТОРОНА: ТЕРРОРИСТЫ (T) — заходи за T.':'Твоя сторона пока не назначена.';
+    const referee=matchMembers.find(m=>m.is_referee);
+    const observer=$('observerSlot');if(referee){observer.classList.remove('hidden');observer.innerHTML=`<div class="observer-title">◉ НАБЛЮДАТЕЛЬ / СУДЬЯ</div>${row(referee)}<div class="side-note">Судья назначен хостом лобби.</div>`}else{observer.classList.add('hidden');observer.innerHTML=''}
     $('matchIdLabel').textContent='#'+currentMatch.id.slice(0,8);renderMaps();
-    const host=side('A').find(m=>m.is_captain)||side('A')[0];
-    $('hostNick').textContent=host?.display_name||'Капитан A не найден';$('hostGameId').textContent='Загрузка…';
-    if(host?.telegram_id){
-      const {data:hostProfile,error:hostError}=await db.from('sm_players').select('standoff_nickname,standoff_id').eq('telegram_id',host.telegram_id).maybeSingle();
-      if(hostError)throw hostError;
-      $('hostNick').textContent=hostProfile?.standoff_nickname||host?.display_name||'Не указан';$('hostGameId').textContent=hostProfile?.standoff_id||'Игровой ID не заполнен';
-    }else $('hostGameId').textContent='Капитан A не найден';
+    const ctCaptain=side('A').find(m=>m.is_captain)||side('A')[0];const host=referee||ctCaptain;
+    $('hostNick').textContent=host?.standoff_nickname||host?.display_name||(referee?'Судья не найден':'Капитан CT не найден');$('hostGameId').textContent='Загрузка…';
+    if(host?.telegram_id){const hostProfile=profiles.find(p=>String(p.telegram_id)===String(host.telegram_id));$('hostNick').textContent=hostProfile?.standoff_nickname||host?.display_name||'Не указан';$('hostGameId').textContent=hostProfile?.standoff_id||'Игровой ID не заполнен';}
+    else $('hostGameId').textContent='Игровой ID не заполнен';
     const invite=currentMatch.lobby_invite_url||'';$('lobbyInviteUrl').value=invite;$('openLobbyInvite').classList.toggle('hidden',!invite);
     await loadChat();matchScreenshotFile=null;matchScreenshotUrl=null;$('matchScreenshot').value='';$('matchScreenshotPreview').classList.add('hidden');$('resultUploadStatus').textContent='Скриншот ещё не прикреплён';$('resultStatus').textContent='';$('confirmResultButton').disabled=true;
     $('testMatchAction').classList.toggle('hidden',!isTestMatch(matchMembers));
   }
-  function renderMaps(){const votes=currentMatch.map_bans||[];const remaining=maps.filter(m=>!votes.includes(m));$('mapList').innerHTML=maps.map(m=>`<button class="map-btn ${votes.includes(m)?'selected':''}" ${votes.includes(m)||remaining.length<=1?'disabled':''} onclick="banMap('${m}')">${m}<small>${votes.includes(m)?'ЗАБАНЕНА':'STANDOFF 2'}</small></button>`).join('');$('mapProgress').textContent=remaining.length===1?'Финальная карта выбрана':`Осталось карт: ${remaining.length} · банов: ${votes.length}/4`;$('mapResult').textContent=remaining.length===1?'Финальная карта: '+remaining[0]:'';$('mapTurn').textContent=votes.length%2===0?'Ход капитана A':'Ход капитана B'}
+  function renderMaps(){const votes=currentMatch.map_bans||[];const remaining=maps.filter(m=>!votes.includes(m));$('mapList').innerHTML=maps.map(m=>`<button class="map-btn ${votes.includes(m)?'selected':''}" ${votes.includes(m)||remaining.length<=1?'disabled':''} onclick="banMap('${m}')">${m}<small>${votes.includes(m)?'ЗАБАНЕНА':'STANDOFF 2'}</small></button>`).join('');$('mapProgress').textContent=remaining.length===1?'Финальная карта выбрана':`Осталось карт: ${remaining.length} · банов: ${votes.length}/4`;$('mapResult').textContent=remaining.length===1?'Финальная карта: '+remaining[0]:'';$('mapTurn').textContent=votes.length%2===0?'Ход капитана CT':'Ход капитана T'}
   window.banMap=async(map)=>{if(!currentMatch||currentMatch.status!=='active')return;const votes=currentMatch.map_bans||[];if(votes.includes(map)||maps.filter(m=>!votes.includes(m)).length<=1)return;const {data,error}=await db.rpc('sm_ban_map',{p_match_id:currentMatch.id,p_map:map,p_telegram_id:player.id});if(error){alert(error.message);return}currentMatch.map_bans=data?.map_bans||[...votes,map];renderMaps()}
   window.copyHostId=async()=>{const id=$('hostGameId').textContent;if(!id||id==='—'||id==='Загрузка…'||id==='Игровой ID не заполнен'){showToast('Игровой ID капитана A не найден.');return}try{await navigator.clipboard.writeText(id);$('hostStatus').textContent='Игровой ID скопирован.'}catch(e){showToast('Не удалось скопировать ID: '+id)}};
   window.saveLobbyInvite=async()=>{if(!currentMatch)return;const url=$('lobbyInviteUrl').value.trim();if(url&&!/^https?:\/\//i.test(url)){ $('hostStatus').textContent='Ссылка должна начинаться с https:// или http://';return}const {error}=await db.from('sm_matches').update({lobby_invite_url:url||null}).eq('id',currentMatch.id);if(error){$('hostStatus').textContent='Ошибка Supabase: '+error.message;showToast(error.message);return}currentMatch.lobby_invite_url=url;$('openLobbyInvite').classList.toggle('hidden',!url);$('hostStatus').textContent=url?'Ссылка-приглашение сохранена.':'Ссылка удалена.'};
@@ -401,18 +453,19 @@
   function fileAsDataUrl(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result));r.onerror=()=>reject(new Error('Не удалось прочитать изображение'));r.readAsDataURL(file)})}
   function parseAiJson(text){let t=String(text||'').trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'');const a=t.indexOf('{'),b=t.lastIndexOf('}');if(a<0||b<a)throw new Error('ИИ вернул ответ не в JSON: '+t.slice(0,300));return JSON.parse(t.slice(a,b+1))}
   async function analyzeScreenshotWithAI(file){
-    if(!AI_API_KEY)throw new Error('Не задан AI_API_KEY. Вставь OpenRouter API key в константу в начале index.html.');
-    const roster=matchMembers.map(m=>({team:m.team_side,nick:m.display_name,game_id:null}));
+    if(!AI_API_KEY)throw new Error('Не задан AI_API_KEY.');
+    const roster=matchMembers.map(m=>({side:m.team_side==='A'?'CT':m.team_side==='B'?'T':'OBSERVER',nick:m.standoff_nickname||m.display_name,is_referee:!!m.is_referee}));
     const imageData=await fileAsDataUrl(file);
-    const prompt=`Ты анализируешь скриншот итоговой таблицы матча Standoff 2. Игроки матча и их команды: ${JSON.stringify(roster)}. Распознай итоговый счёт раундов и ники игроков на изображении. Сопоставь распознанные ники с составами A и B. Победитель — команда с большим числом раундов. Не угадывай. Если счёт, ники или принадлежность к командам нельзя уверенно распознать, верни winner=null и score=null. Ответь ТОЛЬКО JSON без Markdown строго по схеме: {"winner":"A" или "B" или null,"score":"13:9" или null,"confidence":0.0,"recognized_players":[{"nickname":"...","team":"A" или "B" или null}],"reason":"кратко"}. Счёт указывай сначала для A, затем для B.`;
-    const response=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+AI_API_KEY,'Content-Type':'application/json','HTTP-Referer':location.origin,'X-Title':'StatMatch Standoff 2'},body:JSON.stringify({model:'nvidia/nemotron-3.5-super-vl:free',temperature:0,messages:[{role:'user',content:[{type:'text',text:prompt},{type:'image_url',image_url:{url:imageData}}]}]})});
+    const prompt=`Ты — строгий судья официального матча Standoff 2. Стороны: A = Спецназ (CT), B = Террористы (T). Составы матча: ${JSON.stringify(roster)}. На скриншоте распознай именно итоговую таблицу обычного соревновательного матча 5x5. Сопоставь ники игроков с указанными сторонами CT и T, распознай раундовый счёт строго в формате CT:T. Определи победителя только по большему числу раундов. Отдельно оцени, похож ли скриншот на кастомный/фановый режим: изменённая гравитация, скорость, HP, необычный формат, нестандартный HUD, тренировочный/пользовательский режим, боты или неофициальные модификаторы. Если похоже на фан-режим, НЕ засчитывай результат: is_fun_mode=true и fun_mode_warning с причиной. Если счёт или состав нельзя уверенно прочитать, верни winner=null. Ответ только JSON: {"winner":"CT" или "T" или null,"score":"13:9" или null,"confidence":0.0,"recognized_players":[{"nickname":"...","team":"CT" или "T" или null}],"is_fun_mode":false,"fun_mode_warning":null,"reason":"краткое объяснение"}. Счёт всегда сначала CT, затем T. Не выдумывай данные.`;
+    const response=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+AI_API_KEY,'Content-Type':'application/json','HTTP-Referer':location.origin,'X-Title':'StatMatch Standoff 2 League'},body:JSON.stringify({model:'nvidia/nemotron-3.5-super-vl:free',temperature:0,messages:[{role:'user',content:[{type:'text',text:prompt},{type:'image_url',image_url:{url:imageData}}]}]})});
     const body=await response.json().catch(()=>({}));if(!response.ok)throw new Error('OpenRouter '+response.status+': '+(body.error?.message||JSON.stringify(body).slice(0,400)));
     const content=body.choices?.[0]?.message?.content;if(!content)throw new Error('Vision API вернул пустой ответ.');
     const parsed=parseAiJson(Array.isArray(content)?content.map(x=>x.text||'').join(' '):content);
-    if(!['A','B'].includes(parsed.winner)||typeof parsed.score!=='string'||!/^\d{1,2}:\d{1,2}$/.test(parsed.score))throw new Error('ИИ не смог уверенно определить победителя и счёт. Загрузи более чёткий скриншот.');
-    const [a,b]=parsed.score.split(':').map(Number);if(a===b||Math.max(a,b)<1||Math.max(a,b)>30)throw new Error('ИИ распознал некорректный счёт: '+parsed.score);
-    if((parsed.winner==='A'&&a<=b)||(parsed.winner==='B'&&b<=a))throw new Error('Победитель не совпадает с распознанным счётом. Матч не будет засчитан.');
-    if(Number(parsed.confidence??0)<0.70)throw new Error('Низкая уверенность распознавания ('+parsed.confidence+'). Загрузи более чёткий скриншот.');
+    if(!['CT','T'].includes(parsed.winner)||typeof parsed.score!=='string'||!/^[0-9]{1,2}:[0-9]{1,2}$/.test(parsed.score))throw new Error('ИИ не смог уверенно определить победителя CT/T и счёт.');
+    const [ct,t]=parsed.score.split(':').map(Number);if(ct===t||Math.max(ct,t)<1||Math.max(ct,t)>30)throw new Error('ИИ распознал некорректный счёт: '+parsed.score);
+    if((parsed.winner==='CT'&&ct<=t)||(parsed.winner==='T'&&t<=ct))throw new Error('Победитель не совпадает со счётом.');
+    if(parsed.is_fun_mode!==false)throw new Error('ИИ не подтвердил стандартный соревновательный режим либо распознал кастомный/фановый режим. Результат не засчитан: '+(parsed.fun_mode_warning||parsed.reason||'нет подтверждения обычного режима')); 
+    if(Number(parsed.confidence??0)<0.70)throw new Error('Низкая уверенность распознавания ('+parsed.confidence+').');
     return parsed;
   }
   window.uploadAndFinishMatch=async()=>{
@@ -425,19 +478,19 @@
       // Дополнительная проверка: ИИ должен распознать хотя бы одного игрока из каждой стороны.
       const recognized=Array.isArray(ai.recognized_players)?ai.recognized_players:[];
       const norm=x=>String(x||'').toLocaleLowerCase('ru-RU').replace(/[^\p{L}\p{N}]/gu,'');
-      const rosterA=matchMembers.filter(m=>m.team_side==='A').map(m=>norm(m.display_name));
-      const rosterB=matchMembers.filter(m=>m.team_side==='B').map(m=>norm(m.display_name));
-      const matchedA=recognized.some(r=>r.team==='A'&&rosterA.includes(norm(r.nickname)));
-      const matchedB=recognized.some(r=>r.team==='B'&&rosterB.includes(norm(r.nickname)));
-      if(!matchedA||!matchedB)throw new Error('ИИ не смог сопоставить ники на скриншоте с обеими командами. Результат не засчитан.');
+      const rosterCT=matchMembers.filter(m=>m.team_side==='A'&&!m.is_referee).map(m=>norm(m.standoff_nickname||m.display_name));
+      const rosterT=matchMembers.filter(m=>m.team_side==='B'&&!m.is_referee).map(m=>norm(m.standoff_nickname||m.display_name));
+      const matchedCT=recognized.some(r=>r.team==='CT'&&rosterCT.includes(norm(r.nickname)));
+      const matchedT=recognized.some(r=>r.team==='T'&&rosterT.includes(norm(r.nickname)));
+      if(!matchedCT||!matchedT)throw new Error('ИИ не смог сопоставить ники со Спецназом (CT) и Террористами (T). Результат не засчитан.');
       $('resultStatus').textContent=`ИИ определил: победа команды ${ai.winner}, счёт ${ai.score}. Сохраняем скриншот и обновляем рейтинг…`;
       const ext=(matchScreenshotFile.name.split('.').pop()||'jpg').replace(/[^a-z0-9]/gi,'').toLowerCase()||'jpg';
       const path=`${currentMatch.id}/${player.id}/${Date.now()}.${ext}`;
       const {error:uploadError}=await db.storage.from('sm-match-results').upload(path,matchScreenshotFile,{contentType:matchScreenshotFile.type,upsert:false});if(uploadError)throw uploadError;
       const {data:publicData}=db.storage.from('sm-match-results').getPublicUrl(path);matchScreenshotUrl=publicData.publicUrl;
-      const {error:saveError}=await db.from('sm_matches').update({result_screenshot_url:matchScreenshotUrl,result_winner_proposed:ai.winner,result_score:ai.score,result_ai_verified:true,result_ai_json:ai}).eq('id',currentMatch.id);if(saveError)throw saveError;
-      const {error:finishError}=await db.rpc('sm_confirm_match_result',{p_match_id:currentMatch.id,p_winner:ai.winner,p_score:ai.score});if(finishError)throw finishError;
-      $('resultStatus').textContent=`Матч завершён: ${ai.winner==='A'?'Команда A':'Команда B'} победила со счётом ${ai.score}. ELO обновлён.`;
+      const {error:saveError}=await db.from('sm_matches').update({result_screenshot_url:matchScreenshotUrl,result_winner_proposed:ai.winner==='CT'?'A':'B',result_score:ai.score,result_ai_verified:true,result_ai_json:ai}).eq('id',currentMatch.id);if(saveError)throw saveError;
+      const {error:finishError}=await db.rpc('sm_confirm_match_result',{p_match_id:currentMatch.id,p_winner:ai.winner==='CT'?'A':'B',p_score:ai.score});if(finishError)throw finishError;
+      $('resultStatus').textContent=`Матч завершён: ${ai.winner==='CT'?'Спецназ (CT)':'Террористы (T)'} победили со счётом ${ai.score}. ELO обновлён.`;
       stopLobbyPolling();currentMatch=null;await loadPlayer();showPage('profile');
     }catch(e){const msg='Не удалось проверить/засчитать результат: '+errorText(e);$('resultStatus').textContent=msg;showToast(msg);btn.disabled=false;btn.textContent='ПОВТОРИТЬ АНАЛИЗ'}
   };
@@ -447,6 +500,21 @@
     if(error){$('resultStatus').textContent='Не удалось закрыть тестовый матч: '+error.message;showToast('Ошибка Supabase: '+error.message);return}
     stopLobbyPolling();currentMatch=null;await loadPlayer();showPage('profile');
   };
+  function adminLog(message){const el=$('adminLog');if(el){const stamp=new Date().toLocaleTimeString('ru-RU');el.textContent=`[${stamp}] ${message}\n`+el.textContent;}}
+  async function callAdmin(action,target,amount=0,reason='',hours=0){
+    if(!player.is_admin)throw new Error('Нет прав администратора.');
+    const {data,error}=await db.rpc('sm_admin_command',{p_init_data:tg?.initData||'',p_action:action,p_target_nick:target,p_amount:amount,p_reason:reason,p_hours:hours});
+    if(error)throw error;return data;
+  }
+  function parseAdminCommand(raw){const s=String(raw||'').trim();let m;
+    if((m=s.match(/^\/ban\s+(\S+)\s+(\d{1,5})\s+(.+)$/i)))return {action:'ban',nick:m[1],hours:Number(m[2]),reason:m[3].trim()};
+    if((m=s.match(/^\/unban\s+(\S+)$/i)))return {action:'unban',nick:m[1]};
+    if((m=s.match(/^\/elo\s+([+-]\d+)\s+(\S+)$/i)))return {action:'elo',delta:Number(m[1]),nick:m[2]};
+    throw new Error('Формат: /ban ник часы причина | /unban ник | /elo +50 ник | /elo -25 ник');
+  }
+  window.runAdminCommand=async()=>{const status=$('adminStatus');try{const cmd=parseAdminCommand($('adminCommandInput').value);const result=await callAdmin(cmd.action,cmd.nick,cmd.delta||0,cmd.reason||'',cmd.hours||0);const msg=typeof result==='string'?result:JSON.stringify(result);status.textContent=msg;adminLog(msg)}catch(e){status.textContent='Ошибка: '+errorText(e);adminLog('ОШИБКА: '+errorText(e))}};
+  window.adminQuick=async(action)=>{try{const nick=$('adminTargetNick').value.trim();if(!nick)throw new Error('Укажи игровой ник.');let hours=0,reason='',delta=0;if(action==='ban'){hours=Number($('adminBanHours').value);reason=$('adminBanReason').value.trim();if(!Number.isInteger(hours)||hours<1||hours>8760)throw new Error('Срок бана: 1–8760 часов.');if(!reason)throw new Error('Укажи причину бана.')}if(action==='elo'){delta=Number($('adminEloDelta').value);if(!Number.isInteger(delta)||delta===0)throw new Error('Укажи ненулевое целое изменение ELO.')}const result=await callAdmin(action,nick,delta,reason,hours);const msg=typeof result==='string'?result:JSON.stringify(result);$('adminStatus').textContent=msg;adminLog(msg)}catch(e){$('adminStatus').textContent='Ошибка: '+errorText(e);adminLog('ОШИБКА: '+errorText(e))}};
+
   function partyCode(){return 'P-'+String(Math.floor(1000+Math.random()*9000))}
   function partyIsLeader(){return !party||party.leader_telegram_id===player.id}
   function partyAvatarMarkup(url,name){if(url&&url.startsWith('emoji:'))return `<div class="party-avatar avatar-fallback">${esc(url.slice(6))}</div>`;if(url)return `<img class="party-avatar" src="${esc(url)}" alt="">`;return `<div class="party-avatar avatar-fallback">${esc((name||'S').slice(0,1).toUpperCase())}</div>`}
@@ -463,7 +531,7 @@
     }
     slots.innerHTML=html.join('');$('partyCount').textContent=(members.length||1)+' / 5';
     const status=$('partyStatus');if(party){status.textContent=partyIsLeader()?'Ты лидер Party. Приглашай друзей по коду или начинай совместный поиск.':'Ожидание лидера пати… Поиск матча запустит лидер.'}else status.textContent='Ты лидер своей Party. Нажми «＋», чтобы пригласить друзей, или ищи матч один.';
-    const button=$('queueButton');if(button){if(party&&!partyIsLeader()){button.disabled=true;button.textContent='ОЖИДАНИЕ ЛИДЕРА ПАТИ…'}else if(!inQueue){button.disabled=!player.registered;button.textContent=player.registered?'НАЙТИ МАТЧ':'ЗАВЕРШИ РЕГИСТРАЦИЮ'}}
+    const button=$('queueButton');if(button){if(player.is_referee){button.disabled=true;button.textContent='РЕЖИМ СУДЬИ'}else if(party&&!partyIsLeader()){button.disabled=true;button.textContent='ОЖИДАНИЕ ЛИДЕРА ПАТИ…'}else if(!inQueue){button.disabled=!player.registered;button.textContent=player.registered?'НАЙТИ МАТЧ':'ЗАВЕРШИ РЕГИСТРАЦИЮ'}}
   }
   async function refreshParty(){
     if(!db||!player.id)return;
@@ -492,7 +560,7 @@
     party=created;await refreshParty();startPartyPolling();return party;
   }
   window.openPartyInvite=async()=>{
-    if(!player.registered){openRegistration();return}if(!db){showToast('Нет подключения к Supabase');return}
+    if(isBlocked){showToast('Аккаунт заблокирован.');return}if(!player.registered){openRegistration();return}if(!db){showToast('Нет подключения к Supabase');return}
     try{const p=await ensureParty();$('modalRoot').innerHTML=`<div class="modal-back" onclick="if(event.target===this)closeModal()"><div class="modal"><div class="eyebrow">INVITE YOUR FRIENDS</div><h3>Приглашение в Party</h3><div class="party-hint">Отправь короткий код другу или поделись ссылкой в Telegram. В Party может быть до 5 игроков.</div><div class="party-code">${esc(p.code)}</div><div class="modal-actions"><button class="btn btn-secondary" onclick="copyPartyCode()">Скопировать код</button><button class="btn btn-primary" onclick="sharePartyInvite()">Пригласить в Telegram</button></div><label class="field"><span>Ввести код пати друга</span><input id="partyJoinCode" maxlength="8" placeholder="P-4829" autocapitalize="characters"></label><button class="btn btn-primary btn-block" onclick="joinPartyFromModal()">ВСТУПИТЬ В PARTY</button><div class="status" id="partyModalStatus"></div><div class="modal-actions"><button class="btn btn-ghost" onclick="leaveParty()">Выйти из пати</button><button class="btn btn-secondary" onclick="closeModal()">Закрыть</button></div></div></div>`}
     catch(e){showToast('Не удалось открыть приглашение: '+e.message)}
   };
@@ -500,6 +568,7 @@
   window.sharePartyInvite=()=>{if(!party)return;const deepLink='https://t.me/StatMatchSO2_bot/statmatch?startapp=party_'+encodeURIComponent(party.code);const share='https://t.me/share/url?url='+encodeURIComponent(deepLink)+'&text='+encodeURIComponent('Залетай ко мне в Party StatMatch!');if(tg?.openTelegramLink)tg.openTelegramLink(share);else window.open(share,'_blank','noopener')};
   window.joinPartyFromModal=async()=>{const code=$('partyJoinCode')?.value?.trim().toUpperCase();try{await joinPartyByCode(code);closeModal();}catch(e){const el=$('partyModalStatus');if(el)el.textContent=e.message;else showToast(e.message)}};
   async function joinPartyByCode(code){
+    if(isBlocked)throw new Error('Аккаунт заблокирован.');
     if(!code||!/^P-[0-9]{4}$/.test(code))throw new Error('Введи код в формате P-4829.');
     const {data:p,error}=await db.from('sm_parties').select('id,code,leader_telegram_id,created_at').ilike('code',code).maybeSingle();if(error)throw error;if(!p)throw new Error('Party с таким кодом не найдена.');
     const {data:rows,error:countError}=await db.from('sm_party_members').select('telegram_id').eq('party_id',p.id);if(countError)throw countError;
