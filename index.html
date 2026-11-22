@@ -1,146 +1,171 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>StatMatch</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;800&display=swap">
-<style>
-:root{--bg:#121212;--card:#1c1c1e;--card2:#26262a;--line:#2e2e33;--acc:#FF5500;--red:#ff2a4d;--tx:#fff;--mut:#9a9aa3;--ok:#35d07f;
-box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;background:var(--bg);color:var(--tx);font:500 15px/1.4 Rubik,system-ui,sans-serif;padding-bottom:80px}
-h2{font-size:13px;color:var(--mut);font-weight:500;margin:20px 0 8px}
-.wrap{padding:14px;max-width:560px;margin:0 auto}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
-.row{display:flex;align-items:center;gap:12px}.sp{justify-content:space-between}
-.av{width:56px;height:56px;border-radius:50%;background:var(--card2) center/cover;border:2px solid var(--acc);display:grid;place-items:center;font-weight:800;font-size:22px;flex:none}
-.name{font-weight:800;font-size:19px}.mut{color:var(--mut);font-size:13px}
-.bar{height:10px;background:var(--card2);border-radius:6px;overflow:hidden;margin:10px 0 6px}
-.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--red));border-radius:6px;transition:width .6s}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.st{background:var(--card2);border-radius:10px;padding:10px;text-align:center}
-.st b{display:block;font-size:20px;font-weight:800}.st span{font-size:12px;color:var(--mut)}
-.ladder{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
-.ladder div{flex:none;text-align:center;font-size:10px;color:var(--mut);opacity:.5}
-.ladder .on{opacity:1;color:var(--tx)}
-.btn{display:block;width:100%;border:0;border-radius:12px;padding:14px;font:800 16px Rubik,sans-serif;color:#fff;background:var(--acc);cursor:pointer}
-.btn:active{transform:scale(.98)}.btn.ghost{background:var(--card2)}.btn.big{padding:20px;font-size:22px;letter-spacing:.5px}
-.btn:disabled{opacity:.4}
-input{width:100%;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:12px;color:#fff;font:500 15px Rubik,sans-serif;margin-bottom:10px}
-input:focus,.opt:focus-visible,.btn:focus-visible,nav button:focus-visible{outline:2px solid var(--acc)}
-.opts{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-.opt{background:var(--card2);border:2px solid transparent;border-radius:10px;padding:12px;color:#fff;font:500 14px Rubik,sans-serif;cursor:pointer;text-align:left}
-.opt.sel{border-color:var(--acc);background:#2a1a12}
-.icons{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:12px}
-.icons .opt{font-size:22px;text-align:center;padding:8px}
-nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:#0d0d0e;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
-nav button{flex:1;background:none;border:0;color:var(--mut);padding:12px 0 10px;font:500 12px Rubik,sans-serif;cursor:pointer}
-nav button b{display:block;font-size:20px}nav .on{color:var(--acc)}
-.slot{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}.slot:last-child{border:0}
-.mini{width:34px;height:34px;border-radius:50%;background:var(--card2);display:grid;place-items:center;font-weight:700;flex:none}
-.logo{width:64px;height:64px;border-radius:16px;background:var(--card2);border:2px solid var(--acc);display:grid;place-items:center;font-size:32px;flex:none}
-.tag{color:var(--acc);font-weight:800}
-.search{text-align:center;padding:30px 14px}
-.pulse{width:110px;height:110px;margin:0 auto 16px;border-radius:50%;border:4px solid var(--acc);display:grid;place-items:center;font:800 28px Rubik,sans-serif;animation:p 1.4s infinite}
-@keyframes p{0%{box-shadow:0 0 0 0 #ff550080}100%{box-shadow:0 0 0 30px #ff550000}}
-@media(prefers-reduced-motion:reduce){.pulse{animation:none}}
-.teams{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.win{color:var(--ok)}.lose{color:var(--red)}
-.hide{display:none}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0f0f12">
+  <title>StatMatch — Standoff 2 matchmaking</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{--bg:#0f0f12;--panel:#17171c;--panel2:#202027;--line:#2b2b34;--orange:#ff5500;--orange2:#ff7938;--muted:#92929e;--white:#f5f5f7;--green:#45d483;--red:#ff555d}
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--white);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);-webkit-tap-highlight-color:transparent}
+    button,input{font:inherit}button{cursor:pointer;border:0} .app{max-width:560px;min-height:100dvh;margin:auto;padding:16px 16px 100px;background:radial-gradient(ellipse at 90% 0%,rgba(255,85,0,.10),transparent 34%),var(--bg)}
+    .top{display:flex;align-items:center;justify-content:space-between;margin:4px 0 22px}.brand{display:flex;align-items:center;gap:10px;font-weight:950;letter-spacing:.8px;font-size:20px}.brand-mark{width:34px;height:34px;border-radius:11px;background:var(--orange);display:grid;place-items:center;color:#fff;font-weight:1000;box-shadow:0 6px 22px #ff550044}.brand span:last-child{color:var(--orange)}.top-user{display:flex;align-items:center;gap:9px;color:var(--muted);font-size:12px}.avatar{width:34px;height:34px;border-radius:50%;object-fit:cover;background:#303039;border:1px solid #444}.avatar-fallback{display:grid;place-items:center;color:white;font-weight:800}
+    .eyebrow{color:var(--orange);font-size:10px;font-weight:900;letter-spacing:1.7px;text-transform:uppercase}.page-title{font-size:26px;line-height:1.1;font-weight:950;margin:7px 0 18px;letter-spacing:-.6px}.muted{color:var(--muted)}.small{font-size:12px}.card{background:linear-gradient(145deg,#1b1b22,#15151a);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:13px;box-shadow:0 12px 30px #0002}.profile-hero{position:relative;overflow:hidden;padding:18px}.profile-hero:after{content:"";position:absolute;width:180px;height:180px;border:28px solid #ff550012;border-radius:50%;right:-70px;top:-75px}.profile-row{display:flex;align-items:center;gap:13px;position:relative;z-index:1}.big-avatar{width:62px;height:62px;border-radius:17px;object-fit:cover;background:#333}.player-name{font-size:19px;font-weight:900}.player-handle{font-size:12px;color:var(--muted);margin-top:3px}.level-row{display:flex;align-items:center;gap:9px;margin-top:18px}.level-badge{width:42px;height:42px;clip-path:polygon(50% 0,91% 20%,91% 78%,50% 100%,9% 78%,9% 20%);background:linear-gradient(145deg,#ff8a42,#e54400);display:grid;place-items:center;font-size:19px;font-weight:1000;color:white;text-shadow:0 2px 4px #0006}.level-info{flex:1}.level-info strong{font-size:13px}.level-track,.elo-track{height:7px;background:#303039;border-radius:20px;overflow:hidden;margin-top:7px}.level-fill,.elo-fill{height:100%;background:linear-gradient(90deg,var(--orange),#ff9a4d);border-radius:20px;width:0}.elo-line{display:flex;align-items:center;justify-content:space-between;margin-top:17px}.elo-number{font-size:28px;font-weight:950;letter-spacing:-1px}.elo-label{font-size:10px;color:var(--muted);letter-spacing:1.2px;font-weight:800}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.stat{background:#202027;border:1px solid #2d2d36;border-radius:13px;padding:13px 10px}.stat b{font-size:22px;font-weight:950;display:block}.stat span{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
+    .section-head{display:flex;justify-content:space-between;align-items:center;margin:20px 2px 10px}.section-head h3{font-size:14px;margin:0;font-weight:900}.section-head span{font-size:11px;color:var(--muted)}.btn{padding:13px 16px;border-radius:12px;font-weight:900;font-size:13px;transition:.15s}.btn-primary{background:var(--orange);color:#fff;box-shadow:0 7px 20px #ff550033}.btn-primary:active{transform:scale(.98);background:#e94e00}.btn-secondary{background:#282830;color:#fff;border:1px solid #383842}.btn-ghost{background:transparent;color:var(--orange);border:1px solid #69351f}.btn-block{width:100%}.btn:disabled{opacity:.45;cursor:not-allowed}.team-empty{text-align:center;padding:19px 8px}.team-empty .team-icon{font-size:27px;margin-bottom:8px}.team-card{display:flex;align-items:center;gap:12px}.team-logo{width:43px;height:43px;border-radius:12px;background:#332117;color:var(--orange);display:grid;place-items:center;font-weight:1000}.team-name{font-weight:900}.team-tag{color:var(--orange);font-size:11px;font-weight:900;margin-top:3px}
+    .tabs{position:fixed;z-index:10;bottom:0;left:0;right:0;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:#131318ed;backdrop-filter:blur(18px);border-top:1px solid #292931;display:flex;justify-content:center}.tabbar{width:100%;max-width:520px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.tab{background:transparent;color:#777783;border-radius:12px;padding:10px 8px;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px}.tab.active{background:#302017;color:var(--orange)}.tab .ico{font-size:17px}
+    .queue-card{text-align:center;padding:22px 18px}.radar{width:116px;height:116px;border:1px solid #65331f;border-radius:50%;margin:5px auto 19px;display:grid;place-items:center;position:relative;background:radial-gradient(circle,#ff550025 0,#ff550008 55%,transparent 56%)}.radar:before,.radar:after{content:"";position:absolute;inset:9px;border:1px solid #ff550044;border-radius:50%;animation:pulse 2.5s infinite}.radar:after{inset:-5px;animation-delay:1.2s}.radar-icon{font-size:34px;color:var(--orange)}@keyframes pulse{0%{transform:scale(.8);opacity:.7}100%{transform:scale(1.25);opacity:0}}.queue-count{font-size:36px;font-weight:1000;letter-spacing:-1px}.queue-count em{font-style:normal;color:var(--muted);font-size:21px}.queue-meter{height:8px;border-radius:20px;background:#303039;margin:13px 0 9px;overflow:hidden}.queue-meter>div{height:100%;width:0;background:linear-gradient(90deg,#ff5500,#ff9b55);transition:width .25s}.queue-actions{display:flex;gap:8px;margin-top:14px}.queue-actions .btn-primary{flex:1}.test-btn{font-size:11px;padding:10px 11px;white-space:nowrap}.status{font-size:12px;color:var(--muted);min-height:18px;margin-top:10px}.status.good{color:var(--green)}.status.bad{color:var(--red)}
+    .lobby-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.pill{background:#2b201b;color:#ff8a4b;border:1px solid #58311f;border-radius:30px;padding:6px 10px;font-size:10px;font-weight:900;letter-spacing:.7px}.teams{display:grid;grid-template-columns:1fr 1fr;gap:9px}.team-side{background:#1c1c23;border:1px solid var(--line);border-radius:14px;padding:11px}.team-side h4{font-size:11px;margin:0 0 10px;letter-spacing:.8px}.team-side.a h4{color:#6eb6ff}.team-side.b h4{color:#ff8b5d}.player{display:flex;align-items:center;gap:6px;padding:7px 0;border-top:1px solid #2b2b33;font-size:11px}.player:first-of-type{border-top:0}.player .lvl{margin-left:auto;color:var(--orange);font-size:10px;font-weight:900}.captain{color:#ffd27a;font-size:9px;margin-left:2px}.map-list{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.map-btn{padding:12px 10px;text-align:left;border-radius:11px;background:#25252d;color:#fff;border:1px solid #353540;font-size:12px;font-weight:800}.map-btn small{display:block;color:var(--muted);font-size:9px;margin-top:4px}.map-btn:disabled{opacity:.35}.map-btn.selected{border-color:var(--orange);background:#3a2118;color:#ff9a66}.map-progress{font-size:11px;color:var(--muted);margin-bottom:10px}.code-row{display:flex;gap:8px}.code-row input{min-width:0;flex:1;background:#101015;border:1px solid #393943;border-radius:11px;padding:12px;color:#fff;outline:none}.code-row input:focus{border-color:var(--orange)}.chat-box{height:150px;overflow:auto;background:#101015;border:1px solid #292932;border-radius:12px;padding:10px;margin-bottom:8px}.msg{font-size:11px;margin:0 0 9px;line-height:1.4;overflow-wrap:anywhere}.msg b{color:var(--orange)}.chat-send{display:flex;gap:7px}.chat-send input{flex:1;min-width:0;background:#24242c;border:1px solid #383842;border-radius:10px;padding:11px;color:#fff;outline:none}.chat-send button{padding:0 14px}.winner-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.winner-actions .btn{font-size:11px;padding:12px 6px}.hidden{display:none!important}.notice{border:1px solid #5b321f;background:#281a14;color:#ffb18a;padding:11px;border-radius:11px;font-size:11px;line-height:1.5;margin-bottom:13px}.modal-back{position:fixed;inset:0;z-index:30;background:#000a;display:grid;place-items:center;padding:20px}.modal{width:100%;max-width:400px;background:#1a1a21;border:1px solid #393943;border-radius:18px;padding:19px;box-shadow:0 20px 70px #0009}.modal h3{margin:0 0 14px;font-size:17px}.field{display:block;margin:10px 0}.field span{display:block;color:var(--muted);font-size:11px;margin-bottom:6px}.field input{width:100%;padding:12px;background:#101015;border:1px solid #383842;border-radius:10px;color:#fff;outline:none}.modal-actions{display:flex;gap:8px;margin-top:16px}.modal-actions>*{flex:1}.footnote{text-align:center;color:#666672;font-size:10px;margin:20px 0 0}
+
+    .avatar-picker{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.avatar-choice{width:42px;height:42px;border-radius:12px;background:#292932;border:2px solid transparent;font-size:21px}.avatar-choice.active{border-color:var(--orange);background:#3a2118}.file-pick{display:block;padding:11px;border:1px dashed #555563;border-radius:11px;color:#ddd;font-size:11px;text-align:center;margin-top:8px}.team-grid{display:grid;grid-template-columns:1fr;gap:10px}.team-public{display:flex;align-items:center;gap:11px}.team-public .team-logo{flex-shrink:0;object-fit:cover}.tag-chip{color:#ff9a66;background:#382217;border-radius:6px;padding:3px 6px;font-size:10px;font-weight:900}.profile-gameid{font-size:11px;color:#aaa;margin-top:5px}
+
+    @media(min-width:520px){.app{padding-top:24px}.page-title{font-size:30px}.card{padding:19px}}
+  </style>
 </head>
 <body>
-<div class="wrap" id="app"></div>
-<nav id="nav"></nav>
+<div class="app">
+  <header class="top">
+    <div class="brand"><div class="brand-mark">S</div>STAT<span>MATCH</span></div>
+    <div class="top-user"><span id="headerName">Игрок</span><img id="headerAvatar" class="avatar avatar-fallback" alt="avatar"></div>
+  </header>
+
+  <main id="profilePage">
+    <div class="eyebrow">PLAYER OVERVIEW</div><h1 class="page-title">Твой профиль</h1>
+    <section class="card profile-hero">
+      <div class="profile-row"><img id="profileAvatar" class="big-avatar" alt="avatar"><div><div class="player-name" id="profileName">Игрок StatMatch</div><div class="player-handle" id="profileHandle">@player</div><div class="profile-gameid" id="gameIdentity">Standoff 2: не зарегистрирован</div></div></div>
+      <div class="level-row"><div class="level-badge" id="levelBadge">1</div><div class="level-info"><strong id="levelLabel">Уровень 1 · Новичок</strong><div class="level-track"><div class="level-fill" id="levelFill"></div></div></div></div>
+      <div class="elo-line"><div><div class="elo-label">ТЕКУЩИЙ РЕЙТИНГ</div><div class="elo-number" id="eloValue">1 000 <span style="font-size:12px;color:#ff7938">ELO</span></div></div><div class="pill" id="eloTier">ROOKIE</div></div>
+      <div class="elo-track"><div class="elo-fill" id="eloFill"></div></div>
+    </section>
+    <div class="stats">
+      <div class="stat"><b id="matchesStat">0</b><span>Матчи</span></div>
+      <div class="stat"><b id="winStat">—</b><span>Побед %</span></div>
+      <div class="stat"><b id="kdStat">—</b><span>K/D</span></div>
+    </div>
+    <div class="section-head"><h3>МОЯ КОМАНДА</h3><span id="teamStatus">Нет команды</span></div>
+    <section class="card" id="teamCard"><div class="team-empty"><div class="team-icon">🛡️</div><b>Собери свой состав</b><p class="muted small">Создай команду и играй вместе с друзьями</p><button class="btn btn-secondary" onclick="openTeamModal()">＋ Создать команду</button></div></section>
+    <p class="footnote">STATMATCH · COMMUNITY MATCHMAKING FOR STANDOFF 2</p>
+  </main>
+
+  <main id="playPage" class="hidden">
+    <div class="eyebrow">5V5 RANKED QUEUE</div><h1 class="page-title">Найти игру</h1>
+    <div class="notice">Очередь общая для игроков этого проекта. Оставь приложение открытым во время поиска. Для теста можно добавить ботов кнопкой +1.</div>
+    <section class="card queue-card" id="queuePanel">
+      <div class="radar"><div class="radar-icon">⌖</div></div>
+      <div class="eyebrow">MATCHMAKING STATUS</div>
+      <div class="queue-count"><span id="queueCount">0</span><em> / 10</em></div>
+      <div class="queue-meter"><div id="queueFill"></div></div>
+      <div class="muted small" id="queueCaption">Игроков в очереди</div><div id="queueIdentity" style="display:flex;justify-content:center;align-items:center;gap:8px;margin-top:10px"><img id="queueAvatar" class="avatar" style="width:27px;height:27px" alt=""><span id="queueNick" class="small muted">Зарегистрируй игровой профиль</span></div>
+      <div class="queue-actions"><button class="btn btn-primary" id="queueButton" onclick="toggleQueue()" disabled>ЗАВЕРШИ РЕГИСТРАЦИЮ</button><button class="btn btn-secondary test-btn" onclick="addTestPlayer()">＋1 тест</button></div>
+      <div class="status" id="queueStatus">Готов к поиску</div>
+    </section>
+    <section class="card"><div class="section-head" style="margin:0 0 9px"><h3>КАК ЭТО РАБОТАЕТ</h3><span>5 × 5</span></div><p class="muted small" style="line-height:1.6;margin:0">Набираем 10 игроков в общей очереди, распределяем по двум командам, выбираем карту и обмениваемся ID закрытого лобби Standoff 2.</p></section>
+  </main>
+
+
+  <main id="teamsPage" class="hidden">
+    <div class="eyebrow">COMMUNITY & SQUADS</div><h1 class="page-title">Команды</h1>
+    <section class="card" style="text-align:center;padding:23px 16px"><div style="font-size:34px;margin-bottom:8px">⚔️</div><h3 style="margin:0 0 7px">Создай свою киберспортивную команду</h3><p class="muted small">Собери состав, поделись кодом приглашения и играй под общим тегом.</p><button class="btn btn-primary btn-block" onclick="openCreateTeam()">＋ СОЗДАТЬ КОМАНДУ</button></section>
+    <section class="card"><div class="section-head" style="margin:0 0 10px"><h3>ВСТУПИТЬ ПО КОДУ</h3></div><div class="code-row"><input id="joinTeamCode" maxlength="16" placeholder="Код приглашения"><button class="btn btn-secondary" onclick="joinTeam()">Вступить</button></div><div class="status" id="teamActionStatus"></div></section>
+    <div class="section-head"><h3>КОМАНДЫ ИГРОКОВ</h3><span>COMMUNITY</span></div><div id="publicTeams" class="team-grid"><div class="card muted small">Загрузка команд…</div></div>
+  </main>
+
+  <main id="lobbyPage" class="hidden">
+    <div class="lobby-top"><div><div class="eyebrow">MATCH IN PROGRESS</div><h1 class="page-title" style="margin:5px 0 0">Лобби матча</h1></div><span class="pill" id="matchPill">5 VS 5</span></div>
+    <section class="card"><div class="section-head" style="margin:0 0 10px"><h3>СОСТАВЫ</h3><span id="matchIdLabel">Матч</span></div><div class="teams"><div class="team-side a"><h4>КОМАНДА A</h4><div id="teamAList"></div></div><div class="team-side b"><h4>КОМАНДА B</h4><div id="teamBList"></div></div></div></section>
+    <section class="card"><div class="section-head" style="margin:0 0 8px"><h3>ВЫБОР КАРТЫ</h3><span id="mapTurn">Капитан A</span></div><div class="map-progress" id="mapProgress">По очереди исключайте карты, пока не останется одна</div><div class="map-list" id="mapList"></div><p class="muted small" id="mapResult" style="margin:10px 0 0"></p></section>
+    <section class="card"><div class="section-head" style="margin:0 0 10px"><h3>ID ЛОББИ STANDOFF 2</h3><span>PRIVATE ROOM</span></div><p class="muted small" style="line-height:1.5;margin:0 0 10px">Капитан-хост создаёт закрытую комнату в игре и публикует код здесь.</p><div class="code-row"><input id="lobbyCode" maxlength="40" placeholder="Введи ID лобби"><button class="btn btn-secondary" onclick="saveLobbyCode()">Сохранить</button></div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:9px"><span class="muted small" id="savedCode">Код пока не указан</span><button class="btn btn-ghost" style="padding:7px 10px" onclick="copyLobbyCode()">Копировать</button></div></section>
+    <section class="card"><div class="section-head" style="margin:0 0 10px"><h3>ЧАТ МАТЧА</h3><span>LIVE</span></div><div class="chat-box" id="chatMessages"></div><div class="chat-send"><input id="chatInput" maxlength="300" placeholder="Сообщение команде..." onkeydown="if(event.key==='Enter')sendChat()"><button class="btn btn-primary" onclick="sendChat()">➤</button></div></section>
+    <section class="card"><div class="section-head" style="margin:0 0 10px"><h3>ЗАВЕРШИТЬ МАТЧ</h3><span>RESULT</span></div><p class="muted small" style="margin:0 0 11px">Победителям +25 ELO, проигравшим −25 ELO.</p><div class="winner-actions"><button class="btn btn-secondary" onclick="finishMatch('A')">🏆 Победа команды A</button><button class="btn btn-secondary" onclick="finishMatch('B')">🏆 Победа команды B</button></div></section>
+  </main>
+</div>
+
+<nav class="tabs"><div class="tabbar" style="grid-template-columns:repeat(3,1fr)"><button class="tab active" id="tabProfile" onclick="showPage('profile')"><span class="ico">◈</span>Профиль</button><button class="tab" id="tabPlay" onclick="showPage('play')"><span class="ico">⚔</span>Играть</button><button class="tab" id="tabTeams" onclick="showPage('teams')"><span class="ico">♜</span>Команды</button></div></nav>
+<div id="modalRoot"></div>
+
 <script>
-const tg=window.Telegram&&window.Telegram.WebApp;
-const u=(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user)||{first_name:"Игрок",username:"player"};
-if(tg){try{tg.ready();tg.expand();tg.setHeaderColor("#121212");tg.setBackgroundColor("#121212");}catch(e){}}
-const haptic=t=>{try{tg.HapticFeedback.impactOccurred(t||"light")}catch(e){}};
+(() => {
+  const SUPABASE_URL = 'https://fmimwjhrjgoxlajjczex.supabase.co';
+  // Вставь сюда свой Supabase publishable/anon key из Project Settings → API.
+  const SUPABASE_KEY = 'СЮДА_ВСТАВЬ_ТВОЙ_PUBLISHABLE_KEY';
+  const db = (window.supabase && SUPABASE_KEY !== 'СЮДА_ВСТАВЬ_ТВОЙ_PUBLISHABLE_KEY')
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+  const tg = window.Telegram?.WebApp;
+  tg?.ready(); tg?.expand();
+  try { tg?.requestFullscreen?.(); } catch(e) {}
+  try { tg?.setHeaderColor?.('#0f0f12'); tg?.setBackgroundColor?.('#0f0f12'); } catch(e) {}
 
-const LV=[[100,500],[501,750],[751,900],[901,1050],[1051,1200],[1201,1350],[1351,1530],[1531,1750],[1751,2000],[2001,9999]];
-const lvOf=e=>{let l=1;LV.forEach((r,i)=>{if(e>=r[0])l=i+1});return l};
-const lvCol=l=>l==1?"#9a9aa3":l<=3?"#35d07f":l<=7?"#ffc229":l<=9?"#FF5500":"#ff2a4d";
-const badge=(l,s=44)=>`<svg width="${s}" height="${s}" viewBox="0 0 44 44" style="flex:none"><circle cx="22" cy="22" r="19" fill="#121212" stroke="${lvCol(l)}" stroke-width="4"/><circle cx="22" cy="22" r="19" fill="none" stroke="${lvCol(l)}" stroke-width="4" stroke-dasharray="${l*11.94} 120" transform="rotate(-90 22 22)" opacity=".25"/><text x="22" y="28.5" text-anchor="middle" font-family="Rubik,sans-serif" font-weight="800" font-size="${l==10?17:20}" fill="#fff">${l}</text></svg>`;
+  const tgUser = tg?.initDataUnsafe?.user || null;
+  const localId = tgUser?.id ? String(tgUser.id) : ('web_' + getOrCreateGuestId());
+  const player = {
+    id: localId,
+    name: [tgUser?.first_name, tgUser?.last_name].filter(Boolean).join(' ') || 'Игрок StatMatch',
+    username: tgUser?.username || 'player',
+    avatar: tgUser?.photo_url || '', standoff_nickname:'', standoff_id:'', registered:false,
+    elo: 1000, matches: 0, wins: 0, kills: 0, deaths: 0, team: null
+  };
+  let inQueue=false, currentMatch=null, queueTimer=null, lobbyTimer=null, chatChannel=null, currentMapVotes=[];
+  const maps=['Sandstone','Rust','Province','Zone 9','Breeze'];
+  const $ = id => document.getElementById(id);
+  function getOrCreateGuestId(){let v=sessionStorage.getItem('sm_guest');if(!v){v='g'+Math.random().toString(36).slice(2,12);sessionStorage.setItem('sm_guest',v)}return v}
+  function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+  function setAvatar(el,url,name){el.classList.remove('avatar-fallback');el.textContent='';if(url&&url.startsWith('emoji:')){el.removeAttribute('src');el.classList.add('avatar-fallback');el.textContent=url.slice(6);return}if(url){el.src=url;el.onerror=()=>{el.removeAttribute('src');el.classList.add('avatar-fallback');el.textContent=(name||'S').slice(0,1).toUpperCase()}}else{el.removeAttribute('src');el.classList.add('avatar-fallback');el.textContent=(name||'S').slice(0,1).toUpperCase()}}
+  function levelFor(elo){return Math.max(1,Math.min(10,Math.floor((elo-500)/200)+1))}
+  function renderProfile(){
+    $('headerName').textContent=player.name.split(' ')[0];setAvatar($('headerAvatar'),player.avatar,player.name);setAvatar($('profileAvatar'),player.avatar,player.name);
+    $('profileName').textContent=player.name;$('profileHandle').textContent='@'+player.username;$('gameIdentity').textContent=player.registered?`Standoff 2: ${player.standoff_nickname} · ID ${player.standoff_id}`:'Standoff 2: не зарегистрирован';
+    const lvl=levelFor(player.elo);$('levelBadge').textContent=lvl;$('levelLabel').textContent=`Уровень ${lvl} · ${['Новичок','Боец','Стрелок','Ветеран','Элита','Мастер','Эксперт','Легенда','Чемпион','Легенда+'][lvl-1]}`;
+    $('levelFill').style.width=((player.elo%200)/2)+'%';$('eloValue').innerHTML=`${player.elo.toLocaleString('ru-RU')} <span style="font-size:12px;color:#ff7938">ELO</span>`;
+    $('eloTier').textContent=lvl<=2?'ROOKIE':lvl<=4?'RISING':lvl<=6?'ELITE':lvl<=8?'MASTER':'LEGEND';$('eloFill').style.width=Math.max(3,Math.min(100,(player.elo-500)/20))+'%';
+    $('matchesStat').textContent=player.matches;$('winStat').textContent=player.matches?Math.round(player.wins/player.matches*100)+'%':'—';$('kdStat').textContent=player.deaths?(player.kills/player.deaths).toFixed(2):'—';
+    renderTeam();
+  }
+  function renderTeam(){if(!player.team){$('teamStatus').textContent='Нет команды';$('teamCard').innerHTML='<div class="team-empty"><div class="team-icon">🛡️</div><b>Собери свой состав</b><p class="muted small">Создай команду и играй вместе с друзьями</p><button class="btn btn-secondary" onclick="showPage(\'teams\')">＋ Открыть команды</button></div>'}else{$('teamStatus').textContent='В команде';const logo=player.team.logo_url||'emoji:🛡️';$('teamCard').innerHTML=`<div class="team-card"><div class="team-logo" style="overflow:hidden">${logo.startsWith('emoji:')?esc(logo.slice(6)):`<img src="${logo}" style="width:43px;height:43px;object-fit:cover">`}</div><div><div class="team-name">${esc(player.team.name)}</div><div class="team-tag">[${esc(player.team.tag)}] · ${esc(player.team.invite_code||'TEAM')}</div></div></div>`}}
+  window.openTeamModal=()=>{$('modalRoot').innerHTML=`<div class="modal-back" onclick="if(event.target===this)closeModal()"><div class="modal"><h3>Создать команду</h3><label class="field"><span>Название команды</span><input id="teamNameInput" maxlength="28" placeholder="Например, Orange Wolves"></label><label class="field"><span>Тег (до 5 символов)</span><input id="teamTagInput" maxlength="5" placeholder="OW"></label><div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">Отмена</button><button class="btn btn-primary" onclick="createTeam()">Создать</button></div></div></div>`};
+  window.closeModal=()=>$('modalRoot').innerHTML='';
+  window.createTeam=async()=>{const name=$('teamNameInput').value.trim(),tag=$('teamTagInput').value.trim().toUpperCase();if(!name||!tag)return alert('Заполни название и тег команды');if(db){const {data:teamRow,error}=await db.from('sm_teams').insert({name,tag,captain_id:player.id}).select('id').single();if(error){console.error(error);alert('Не удалось сохранить команду: '+error.message);return}const upd=await db.from('sm_players').update({team_id:teamRow.id}).eq('telegram_id',player.id);if(upd.error){alert('Команда создана, но привязка профиля не сохранилась: '+upd.error.message);return}}player.team={name,tag};renderTeam();closeModal()};
 
-let S={tab:"profile",elo:1180,matches:47,wins:27,kills:812,deaths:690,mode:"Рейтинг 5x5",map:"Sandstone",team:null,phase:"idle",found:0,sec:0,last:null};
-try{const t=JSON.parse(localStorage.getItem("sm_team")||"null");if(t)S.team=t}catch(e){}
-const MODES=["Рейтинг 5x5","Обычный 5x5"],MAPS=["Sandstone","Rust","Province","Zone 7","Hanami","Breeze"];
-const ICONS=["🦅","🔥","💀","⚡","🐺","🎯","🛡️","🐉","☠️","🚀","👑","🦂"];
-let draft={icon:"🔥"},timer=null;
-const $=id=>document.getElementById(id);
-const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const init=(u.first_name||"?")[0].toUpperCase();
-const me=()=>u.photo_url?`<div class="av" style="background-image:url('${esc(u.photo_url)}')"></div>`:`<div class="av">${esc(init)}</div>`;
-
-function profile(){
-  const l=lvOf(S.elo),r=LV[l-1],nx=l<10?LV[l][0]:null;
-  const pct=l==10?100:Math.round((S.elo-r[0])/(nx-r[0])*100);
-  const kd=(S.kills/S.deaths).toFixed(2),wr=Math.round(S.wins/S.matches*100);
-  return `<div class="card"><div class="row">${me()}<div style="flex:1;min-width:0"><div class="name">${esc(u.first_name)}</div>
-  <div class="mut">${u.username?"@"+esc(u.username):"Standoff 2"}${S.team?` · <span class="tag">[${esc(S.team.tag)}]</span>`:""}</div></div>${badge(l,56)}</div>
-  <div class="row sp" style="margin-top:14px"><b style="font-size:30px;font-weight:800">${S.elo} <span style="font-size:14px;color:var(--acc)">ELO</span></b><span class="mut">Уровень ${l}</span></div>
-  <div class="bar"><i style="width:${pct}%"></i></div>
-  <div class="mut">${nx?`До уровня ${l+1}: ${nx-S.elo} ELO`:"Максимальный уровень"}</div></div>
-  <h2>Статистика</h2><div class="grid3"><div class="st"><b>${kd}</b><span>K/D</span></div><div class="st"><b>${wr}%</b><span>Винрейт</span></div><div class="st"><b>${S.matches}</b><span>Матчей</span></div></div>
-  ${S.last?`<h2>Последний матч</h2><div class="card row sp"><span>${esc(S.last.map)}</span><b class="${S.last.win?"win":"lose"}">${S.last.win?"Победа":"Поражение"} ${S.last.d>0?"+":""}${S.last.d}</b></div>`:""}
-  <h2>Уровни</h2><div class="ladder">${LV.map((x,i)=>`<div class="${i+1==l?"on":""}">${badge(i+1,38)}${x[0]}${i==9?"+":""}</div>`).join("")}</div>`;
-}
-
-function play(){
-  if(S.phase=="search")return `<div class="card search"><div class="pulse" id="pc">${S.found}/10</div><div class="name">Ищем матч</div><div class="mut">${esc(S.mode)} · ${esc(S.map)} · <span id="ps">${S.sec}</span> с</div><div style="height:16px"></div><button class="btn ghost" onclick="cancel()">Отменить</button></div>`;
-  if(S.phase=="lobby"){const a=lobbyTeam(5,true),b=lobbyTeam(5,false);
-    return `<div class="card"><div class="row sp"><b style="font-size:18px">Матч найден</b><span class="mut">${esc(S.map)}</span></div>
-    <div class="teams" style="margin-top:12px"><div><div class="mut">Ваша команда</div>${a}</div><div><div class="mut">Соперники</div>${b}</div></div></div>
-    <div style="height:12px"></div><button class="btn big" onclick="finish()">Начать матч</button><div style="height:8px"></div><button class="btn ghost" onclick="cancel()">Выйти из лобби</button>`;}
-  return `<h2>Режим</h2><div class="opts">${MODES.map(m=>`<button class="opt ${m==S.mode?"sel":""}" onclick="S.mode='${m}';render()">${m}</button>`).join("")}</div>
-  <h2>Карта</h2><div class="opts">${MAPS.map(m=>`<button class="opt ${m==S.map?"sel":""}" onclick="S.map='${m}';render()">${m}</button>`).join("")}</div>
-  <div style="height:18px"></div><button class="btn big" onclick="startSearch()">Играть 5x5</button>`;
-}
-const fake=["Kira","Vlad","Neo","Sasha","Ghost","Rex","Mika","Zed","Alt","Yan"];
-function lobbyTeam(n,mine){return Array.from({length:n},(_,i)=>{const nm=mine&&i==0?u.first_name:fake[(mine?i:i+5)%10];const lv=mine&&i==0?lvOf(S.elo):Math.max(1,Math.min(10,lvOf(S.elo)+((i*3)%5)-2));
-  return `<div class="slot">${badge(lv,30)}<span>${esc(nm)}</span></div>`}).join("")}
-function startSearch(){haptic();S.phase="search";S.found=0;S.sec=0;render();
-  timer=setInterval(()=>{S.sec++;if(S.found<10&&Math.random()<.6)S.found++;
-    const a=$("pc"),b=$("ps");if(a)a.textContent=S.found+"/10";if(b)b.textContent=S.sec;
-    if(S.found>=10){clearInterval(timer);S.phase="lobby";haptic("medium");render()}},700)}
-function cancel(){clearInterval(timer);S.phase="idle";render()}
-function finish(){const win=Math.random()<.55,d=win?20+Math.floor(Math.random()*6):-(18+Math.floor(Math.random()*6));
-  const k=8+Math.floor(Math.random()*18),de=8+Math.floor(Math.random()*14);
-  S.elo=Math.max(100,S.elo+d);S.matches++;if(win)S.wins++;S.kills+=k;S.deaths+=de;S.last={win,d,map:S.map};S.phase="idle";S.tab="profile";haptic(win?"heavy":"light");render()}
-
-function teamView(){
-  if(!S.team)return `<div class="card"><div class="name" style="margin-bottom:12px">Создать команду</div>
-  <input id="tn" maxlength="20" placeholder="Название команды"><input id="tt" maxlength="4" placeholder="Тег (до 4 символов)" style="text-transform:uppercase">
-  <div class="mut" style="margin-bottom:8px">Логотип</div><div class="icons">${ICONS.map(i=>`<button class="opt ${i==draft.icon?"sel":""}" onclick="draft.icon='${i}';keep();render()">${i}</button>`).join("")}</div>
-  <button class="btn" onclick="mk()">Создать команду</button></div>`;
-  const t=S.team,link=`https://t.me/StatMatchBot/app?startapp=team_${encodeURIComponent(t.tag)}`;
-  const slots=Array.from({length:5},(_,i)=>i==0?`<div class="slot">${badge(lvOf(S.elo),30)}<span style="flex:1">${esc(u.first_name)}</span><span class="mut">Капитан</span></div>`:`<div class="slot"><div class="mini">+</div><span class="mut">Свободное место</span></div>`).join("");
-  return `<div class="card row"><div class="logo">${t.icon}</div><div><div class="name">${esc(t.name)}</div><div class="tag">[${esc(t.tag)}]</div></div></div>
-  <h2>Состав</h2><div class="card" style="padding:4px 14px">${slots}</div>
-  <h2>Пригласить друзей</h2><div class="card"><div class="mut" style="word-break:break-all;margin-bottom:10px">${esc(link)}</div>
-  <div class="row"><button class="btn" onclick="share('${link}')">Поделиться</button><button class="btn ghost" id="cp" onclick="copy('${link}')">Копировать</button></div></div>
-  <div style="height:12px"></div><button class="btn ghost" onclick="del()">Удалить команду</button>`;
-}
-function keep(){const a=$("tn"),b=$("tt");if(a)draft.name=a.value;if(b)draft.tag=b.value}
-function mk(){keep();const n=(draft.name||"").trim(),t=(draft.tag||"").trim().toUpperCase();
-  if(n.length<2||t.length<2){haptic("medium");alert("Введите название (от 2 символов) и тег (от 2 символов)");return}
-  S.team={name:n,tag:t,icon:draft.icon};try{localStorage.setItem("sm_team",JSON.stringify(S.team))}catch(e){}haptic("medium");render()}
-function del(){S.team=null;draft={icon:"🔥"};try{localStorage.removeItem("sm_team")}catch(e){}render()}
-function share(l){const url="https://t.me/share/url?url="+encodeURIComponent(l)+"&text="+encodeURIComponent("Вступай в мою команду в StatMatch!");
-  if(tg&&tg.openTelegramLink)tg.openTelegramLink(url);else window.open(url,"_blank")}
-function copy(l){const done=()=>{const b=$("cp");if(b)b.textContent="Скопировано"};
-  try{navigator.clipboard.writeText(l).then(done,done)}catch(e){done()}}
-
-function render(){
-  $("app").innerHTML=S.tab=="profile"?profile():S.tab=="play"?play():teamView();
-  $("nav").innerHTML=[["profile","👤","Профиль"],["play","🎮","Играть"],["team","🛡️","Команда"]].map(t=>`<button class="${S.tab==t[0]?"on":""}" onclick="go('${t[0]}')"><b>${t[1]}</b>${t[2]}</button>`).join("");
-}
-function go(t){keep();S.tab=t;haptic();render();window.scrollTo(0,0)}
-render();
+  let chosenAvatar='emoji:⚡', chosenTeamLogo='emoji:🛡️';
+  const avatarPresets=['⚡','🎯','🔥','🐺','☠️','👾','🦊','🦂'];
+  function presetMarkup(target,selected){return avatarPresets.map((a)=>`<button type="button" class="avatar-choice ${selected===('emoji:'+a)?'active':''}" onclick="choosePreset('${target}','${a}')">${a}</button>`).join('')}
+  window.choosePreset=(target,emoji)=>{const value='emoji:'+emoji;if(target==='player'){chosenAvatar=value;document.querySelectorAll('#regPresets .avatar-choice').forEach(b=>b.classList.toggle('active',b.textContent===emoji))}else{chosenTeamLogo=value;document.querySelectorAll('#teamPresets .avatar-choice').forEach(b=>b.classList.toggle('active',b.textContent===emoji))}};
+  async function compressImage(file,max=256){return new Promise((resolve,reject)=>{if(!file||!file.type.startsWith('image/'))return reject(new Error('Выбери файл изображения'));const reader=new FileReader();reader.onerror=reject;reader.onload=()=>{const img=new Image();img.onerror=reject;img.onload=()=>{const scale=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));c.getContext('2d').drawImage(img,0,0,c.width,c.height);resolve(c.toDataURL('image/jpeg',.78))};img.src=reader.result};reader.readAsDataURL(file)})}
+  window.previewRegAvatar=async(input)=>{try{chosenAvatar=await compressImage(input.files[0],256);$('regPreview').src=chosenAvatar;document.querySelectorAll('#regPresets .avatar-choice').forEach(b=>b.classList.remove('active'))}catch(e){alert(e.message)}};
+  window.openRegistration=()=>{if(!$('modalRoot'))return;if($('registrationModal'))return;$('modalRoot').innerHTML=`<div class="modal-back" id="registrationModal"><div class="modal" style="max-height:88dvh;overflow:auto"><div class="eyebrow">PLAYER VERIFICATION</div><h3>Регистрация игрока</h3><p class="muted small">Заполни игровой профиль Standoff 2. Без ника и цифрового ID доступ к матчмейкингу закрыт.</p><label class="field"><span>Никнейм в Standoff 2</span><input id="regNick" maxlength="24" placeholder="Твой игровой ник" value="${esc(player.standoff_nickname)}"></label><label class="field"><span>Цифровой ID игрока</span><input id="regGameId" inputmode="numeric" pattern="[0-9]*" maxlength="20" placeholder="Только цифры" value="${esc(player.standoff_id)}"></label><div class="field"><span>Аватар профиля</span><img id="regPreview" src="${player.avatar&&!player.avatar.startsWith('emoji:')?player.avatar:''}" style="width:58px;height:58px;object-fit:cover;border-radius:15px;background:#303039" onerror="this.style.display='none'"><label class="file-pick">Загрузить с телефона<input type="file" accept="image/*" style="display:none" onchange="previewRegAvatar(this)"></label><div id="regPresets" class="avatar-picker">${presetMarkup('player',chosenAvatar)}</div></div><div class="reg-required">* Никнейм и ID обязательны. ID должен содержать только цифры.</div><div class="modal-actions"><button class="btn btn-primary btn-block" onclick="saveRegistration()">СОХРАНИТЬ И ПРОДОЛЖИТЬ</button></div><div class="muted small" id="regError" style="margin-top:9px"></div></div></div>`;if(player.avatar){chosenAvatar=player.avatar;if(!player.avatar.startsWith('emoji:'))$('regPreview').src=player.avatar;else chosenAvatar=player.avatar}};
+  window.saveRegistration=async()=>{const nick=$('regNick').value.trim(),gameId=$('regGameId').value.trim();if(nick.length<2||nick.length>24){$('regError').textContent='Никнейм должен содержать от 2 до 24 символов.';return}if(!/^[0-9]{4,20}$/.test(gameId)){$('regError').textContent='Игровой ID: от 4 до 20 цифр, без пробелов.';return}if(!db){$('regError').textContent='Сначала добавь Supabase publishable key в index.html.';return}const payload={telegram_id:player.id,display_name:nick,standoff_nickname:nick,standoff_id:gameId,username:player.username,avatar_url:chosenAvatar||'emoji:⚡'};const {error}=await db.from('sm_players').upsert(payload,{onConflict:'telegram_id'});if(error){$('regError').textContent='Ошибка сохранения: '+error.message;return}player.name=nick;player.standoff_nickname=nick;player.standoff_id=gameId;player.avatar=chosenAvatar||'emoji:⚡';player.registered=true;renderProfile();setAvatar($('queueAvatar'),player.avatar,player.name);$('queueNick').textContent=player.standoff_nickname;$('queueButton').disabled=false;$('queueButton').textContent='НАЙТИ МАТЧ';closeModal();};
+  window.openCreateTeam=()=>{if(!player.registered){openRegistration();return}$('modalRoot').innerHTML=`<div class="modal-back" onclick="if(event.target===this)closeModal()"><div class="modal" style="max-height:88dvh;overflow:auto"><h3>Новая команда</h3><label class="field"><span>Название команды</span><input id="newTeamName" maxlength="28" placeholder="Например, Orange Wolves"></label><label class="field"><span>Тег команды (3–5 символов)</span><input id="newTeamTag" maxlength="5" minlength="3" placeholder="OWOLF"></label><div class="field"><span>Логотип команды</span><img id="teamLogoPreview" style="width:54px;height:54px;border-radius:14px;object-fit:cover;background:#303039" alt=""><label class="file-pick">Загрузить логотип<input type="file" accept="image/*" style="display:none" onchange="previewTeamLogo(this)"></label><div id="teamPresets" class="avatar-picker">${presetMarkup('team',chosenTeamLogo)}</div></div><div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">Отмена</button><button class="btn btn-primary" onclick="createTeamV2()">Создать</button></div><div class="muted small" id="teamCreateError"></div></div></div>`};
+  window.previewTeamLogo=async(input)=>{try{chosenTeamLogo=await compressImage(input.files[0],256);$('teamLogoPreview').src=chosenTeamLogo;document.querySelectorAll('#teamPresets .avatar-choice').forEach(b=>b.classList.remove('active'))}catch(e){alert(e.message)}};
+  window.createTeamV2=async()=>{const name=$('newTeamName').value.trim(),tag=$('newTeamTag').value.trim().toUpperCase();if(name.length<2||!/^[A-Z0-9]{3,5}$/.test(tag)){$('teamCreateError').textContent='Название обязательно, тег — 3–5 латинских букв/цифр.';return}const invite=Array.from(crypto.getRandomValues(new Uint8Array(5))).map(x=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[x%32]).join('');const {data,error}=await db.from('sm_teams').insert({name,tag,captain_id:player.id,logo_url:chosenTeamLogo,invite_code:invite}).select('*').single();if(error){$('teamCreateError').textContent=error.message;return}const mem=await db.from('sm_team_members').upsert({team_id:data.id,telegram_id:player.id,role:'captain'},{onConflict:'telegram_id'});if(mem.error){$('teamCreateError').textContent='Команда создана, ошибка добавления капитана: '+mem.error.message;return}await db.from('sm_players').update({team_id:data.id}).eq('telegram_id',player.id);player.team=data;renderTeam();closeModal();loadTeams()};
+  window.joinTeam=async()=>{if(!player.registered){openRegistration();return}const code=$('joinTeamCode').value.trim().toUpperCase();if(!code)return;const {data,error}=await db.rpc('sm_join_team',{p_invite_code:code,p_telegram_id:player.id});if(error){$('teamActionStatus').textContent=error.message;return}player.team=data;await db.from('sm_players').update({team_id:data.id}).eq('telegram_id',player.id);renderTeam();$('teamActionStatus').textContent='Ты вступил в команду '+data.name;loadTeams()};
+  async function loadTeams(){if(!db){$('publicTeams').innerHTML='<div class="card muted small">Подключи Supabase, чтобы увидеть команды.</div>';return}const {data,error}=await db.from('sm_teams').select('id,name,tag,logo_url,invite_code').order('created_at',{ascending:false}).limit(50);if(error){$('publicTeams').innerHTML='<div class="card muted small">'+esc(error.message)+'</div>';return}const ids=(data||[]).map(t=>t.id);let roster=[];if(ids.length){const mr=await db.from('sm_team_members').select('team_id,telegram_id,role').in('team_id',ids);if(!mr.error&&mr.data?.length){const pids=[...new Set(mr.data.map(m=>m.telegram_id))];const pr=await db.from('sm_players').select('telegram_id,standoff_nickname,display_name,avatar_url').in('telegram_id',pids);roster=mr.data.map(m=>({...m,profile:pr.data?.find(p=>p.telegram_id===m.telegram_id)}))}}$('publicTeams').innerHTML=(data||[]).map(t=>{const members=roster.filter(m=>m.team_id===t.id);const faces=members.slice(0,5).map(m=>`<span style="display:inline-flex;background:#292932;border-radius:7px;padding:4px 6px;margin:3px 3px 0 0;font-size:10px">${esc(m.profile?.standoff_nickname||m.profile?.display_name||'Игрок')}${m.role==='captain'?' ★':''}</span>`).join('');return `<div class="card team-public"><div class="team-logo" style="width:48px;height:48px;display:grid;place-items:center">${t.logo_url&&!t.logo_url.startsWith('emoji:')?`<img src="${t.logo_url}" style="width:48px;height:48px;object-fit:cover;border-radius:12px">`:esc((t.logo_url||'emoji:🛡️').slice(6)||'🛡️')}</div><div style="min-width:0;flex:1"><div style="font-weight:900">${esc(t.name)} <span class="tag-chip">[${esc(t.tag)}]</span></div><div class="muted small">${members.length} участн. · Код: ${esc(t.invite_code||'—')}</div><div>${faces}</div></div><button class="btn btn-secondary" style="padding:9px 10px" onclick="copyTeamCode('${esc(t.invite_code||'')}')">Код</button></div>`}).join('')||'<div class="card muted small">Пока нет команд. Создай первую!</div>'}
+  window.copyTeamCode=async(code)=>{if(!code)return;try{await navigator.clipboard.writeText(code);alert('Код приглашения скопирован: '+code)}catch(e){alert('Код приглашения: '+code)}};
+  async function loadPlayer(){if(!db){renderProfile();$('queueButton').disabled=true;openRegistration();return}try{const {data,error}=await db.from('sm_players').select('*').eq('telegram_id',player.id).maybeSingle();if(error)throw error;if(data){Object.assign(player,{name:data.display_name||player.name,elo:data.elo??1000,matches:data.matches??0,wins:data.wins??0,kills:data.kills??0,deaths:data.deaths??0,standoff_nickname:data.standoff_nickname||'',standoff_id:data.standoff_id||'',avatar:data.avatar_url||player.avatar,registered:!!(data.standoff_nickname&&data.standoff_id)});if(data.team_id){const t=await db.from('sm_teams').select('id,name,tag,logo_url,invite_code').eq('id',data.team_id).maybeSingle();if(t.data)player.team=t.data}}else player.registered=false}catch(e){console.warn('Player load:',e.message);player.registered=false}renderProfile();setAvatar($('queueAvatar'),player.avatar,player.name);$('queueNick').textContent=player.registered?player.standoff_nickname:'Зарегистрируй игровой профиль';$('queueButton').disabled=!player.registered;$('queueButton').textContent=player.registered?'НАЙТИ МАТЧ':'ЗАВЕРШИ РЕГИСТРАЦИЮ';if(!player.registered)openRegistration();}
+  async function upsertPlayer(){if(!db)return;const {error}=await db.from('sm_players').upsert({telegram_id:player.id,display_name:player.standoff_nickname||player.name,username:player.username,avatar_url:player.avatar,standoff_nickname:player.standoff_nickname,standoff_id:player.standoff_id,elo:player.elo},{onConflict:'telegram_id'});if(error)console.warn(error.message)}
+  window.showPage=(page)=>{if((page==='play'||page==='lobby')&&!player.registered){openRegistration();return}['profile','play','lobby','teams'].forEach(p=>$(p+'Page').classList.toggle('hidden',p!==page));$('tabProfile').classList.toggle('active',page==='profile');$('tabPlay').classList.toggle('active',page==='play');$('tabTeams').classList.toggle('active',page==='teams');if(page==='play')refreshQueue();if(page==='teams')loadTeams()};
+  function queueStatus(text,kind=''){$('queueStatus').textContent=text;$('queueStatus').className='status '+kind}
+  async function refreshQueue(){if(!db){$('queueCount').textContent='—';$('queueCaption').textContent='Добавь Supabase publishable key';$('queueFill').style.width='0%';return}try{const {count,error}=await db.from('sm_queue').select('*',{count:'exact',head:true});if(error)throw error;const n=Math.min(10,count||0);$('queueCount').textContent=n;$('queueFill').style.width=(n*10)+'%';$('queueCaption').textContent='Игроков в очереди';if(inQueue)queueStatus('Ищем соперников…','good');await checkForMatch()}catch(e){queueStatus('Ошибка Supabase: '+e.message,'bad')}}
+  window.toggleQueue=async()=>{if(!player.registered){openRegistration();return}if(!db){queueStatus('Сначала вставь Supabase publishable key в index.html','bad');return}if(inQueue){await leaveQueue();return}try{await upsertPlayer();const {data,error}=await db.rpc('sm_join_queue',{p_telegram_id:player.id,p_display_name:player.standoff_nickname,p_username:player.username,p_avatar_url:player.avatar});if(error)throw error;inQueue=true;$('queueButton').textContent='ОТМЕНИТЬ ПОИСК';queueStatus('Ты в очереди. Подбираем игроков…','good');await refreshQueue();startQueuePolling();if(data?.match_id)await loadMatch(data.match_id)}catch(e){queueStatus('Не удалось войти в очередь: '+e.message,'bad')}}
+  async function leaveQueue(){try{await db.from('sm_queue').delete().eq('telegram_id',player.id)}catch(e){}inQueue=false;stopQueuePolling();$('queueButton').textContent='НАЙТИ МАТЧ';queueStatus('Поиск отменён');refreshQueue()}
+  function startQueuePolling(){stopQueuePolling();queueTimer=setInterval(refreshQueue,2000)}function stopQueuePolling(){if(queueTimer)clearInterval(queueTimer);queueTimer=null}
+  window.addTestPlayer=async()=>{if(!player.registered){openRegistration();return}if(!db){queueStatus('Сначала вставь Supabase publishable key в index.html','bad');return}try{const {data,error}=await db.rpc('sm_add_test_player');if(error)throw error;queueStatus('Тестовый игрок добавлен','good');await refreshQueue();if(data?.match_id)await loadMatch(data.match_id)}catch(e){queueStatus('Не удалось добавить тестового игрока: '+e.message,'bad')}};
+  async function checkForMatch(){if(!db||!inQueue||currentMatch)return;const {data,error}=await db.from('sm_match_players').select('match_id').eq('telegram_id',player.id).order('created_at',{ascending:false}).limit(1).maybeSingle();if(!error&&data?.match_id)await loadMatch(data.match_id)}
+  async function loadMatch(id){if(!db||!id)return;try{const {data,error}=await db.from('sm_matches').select('*').eq('id',id).single();if(error)throw error;currentMatch=data;inQueue=false;stopQueuePolling();$('queueButton').textContent='НАЙТИ МАТЧ';await renderLobby();showPage('lobby');startLobbyPolling()}catch(e){console.error(e);queueStatus('Ошибка загрузки матча: '+e.message,'bad')}}
+  async function renderLobby(){const {data:members,error}=await db.from('sm_match_players').select('telegram_id,display_name,elo,team_side,is_captain,avatar_url,team_tag').eq('match_id',currentMatch.id).order('team_side').order('created_at');if(error)throw error;const side=(s)=>members.filter(m=>m.team_side===s);const row=m=>`<div class="player"><img src="${m.avatar_url||''}" onerror="this.style.display='none'" style="width:23px;height:23px;border-radius:7px;object-fit:cover"><span>${esc(m.team_tag?'['+m.team_tag+'] ':'')}${esc(m.display_name||'Игрок')}</span>${m.is_captain?'<span class="captain">★</span>':''}<span class="lvl">${levelFor(m.elo||1000)}</span></div>`;$('teamAList').innerHTML=side('A').map(row).join('')||'—';$('teamBList').innerHTML=side('B').map(row).join('')||'—';$('matchIdLabel').textContent='#'+currentMatch.id.slice(0,8);renderMaps();$('savedCode').textContent=currentMatch.lobby_code||'Код пока не указан';$('lobbyCode').value=currentMatch.lobby_code||'';await loadChat()}
+  function renderMaps(){const votes=currentMatch.map_bans||[];const remaining=maps.filter(m=>!votes.includes(m));$('mapList').innerHTML=maps.map(m=>`<button class="map-btn ${votes.includes(m)?'selected':''}" ${votes.includes(m)||remaining.length<=1?'disabled':''} onclick="banMap('${m}')">${m}<small>${votes.includes(m)?'ЗАБАНЕНА':'STANDOFF 2'}</small></button>`).join('');$('mapProgress').textContent=remaining.length===1?'Финальная карта выбрана':`Осталось карт: ${remaining.length} · банов: ${votes.length}/4`;$('mapResult').textContent=remaining.length===1?'Финальная карта: '+remaining[0]:'';$('mapTurn').textContent=votes.length%2===0?'Ход капитана A':'Ход капитана B'}
+  window.banMap=async(map)=>{if(!currentMatch||currentMatch.status!=='active')return;const votes=currentMatch.map_bans||[];if(votes.includes(map)||maps.filter(m=>!votes.includes(m)).length<=1)return;const {data,error}=await db.rpc('sm_ban_map',{p_match_id:currentMatch.id,p_map:map,p_telegram_id:player.id});if(error){alert(error.message);return}currentMatch.map_bans=data?.map_bans||[...votes,map];renderMaps()}
+  window.saveLobbyCode=async()=>{const code=$('lobbyCode').value.trim();if(!code)return alert('Введи ID лобби');const {error}=await db.from('sm_matches').update({lobby_code:code}).eq('id',currentMatch.id);if(error){alert(error.message);return}currentMatch.lobby_code=code;$('savedCode').textContent=code};
+  window.copyLobbyCode=async()=>{const code=currentMatch?.lobby_code||$('lobbyCode').value.trim();if(!code)return alert('Код ещё не добавлен');try{await navigator.clipboard.writeText(code);$('savedCode').textContent='Скопировано: '+code}catch(e){alert('Не удалось скопировать. Код: '+code)}};
+  async function loadChat(){if(!currentMatch)return;const {data,error}=await db.from('sm_messages').select('*').eq('match_id',currentMatch.id).order('created_at',{ascending:true}).limit(100);if(error)return;$('chatMessages').innerHTML=(data||[]).map(msgHtml).join('');$('chatMessages').scrollTop=$('chatMessages').scrollHeight}
+  function msgHtml(m){return `<p class="msg"><b>${esc(m.display_name)}:</b> ${esc(m.body)}</p>`}
+  window.sendChat=async()=>{const body=$('chatInput').value.trim();if(!body||!currentMatch)return;$('chatInput').value='';const {error}=await db.from('sm_messages').insert({match_id:currentMatch.id,telegram_id:player.id,display_name:player.name,body});if(error)alert(error.message);else loadChat()};
+  function startLobbyPolling(){if(lobbyTimer)clearInterval(lobbyTimer);lobbyTimer=setInterval(async()=>{if(!currentMatch)return;const {data}=await db.from('sm_matches').select('*').eq('id',currentMatch.id).single();if(data){currentMatch=data;renderMaps();$('savedCode').textContent=data.lobby_code||'Код пока не указан';if(data.status==='finished'){stopLobbyPolling();showPage('profile');currentMatch=null;loadPlayer()}}loadChat()},2500)}
+  function stopLobbyPolling(){if(lobbyTimer)clearInterval(lobbyTimer);lobbyTimer=null}
+  window.finishMatch=async(winner)=>{if(!currentMatch)return;if(!confirm(`Подтвердить победу команды ${winner}? Рейтинг всех игроков матча изменится.`))return;const {error}=await db.rpc('sm_finish_match',{p_match_id:currentMatch.id,p_winner:winner});if(error){alert('Не удалось завершить матч: '+error.message);return}alert(`Матч завершён. Команда ${winner} получила +25 ELO.`);stopLobbyPolling();currentMatch=null;await loadPlayer();showPage('profile')};
+  if(db){db.channel('sm-chat-live').on('postgres_changes',{event:'INSERT',schema:'public',table:'sm_messages'},payload=>{if(currentMatch&&payload.new.match_id===currentMatch.id){const box=$('chatMessages');box.insertAdjacentHTML('beforeend',msgHtml(payload.new));box.scrollTop=box.scrollHeight}}).subscribe()}
+  loadPlayer();
+  if(!db){queueStatus('Добавь Supabase publishable key в код приложения','bad')}
+})();
 </script>
 </body>
 </html>
