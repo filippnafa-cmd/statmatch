@@ -50,6 +50,7 @@
       <div class="stat"><b id="winStat">—</b><span>Побед %</span></div>
       <div class="stat"><b id="kdStat">—</b><span>K/D</span></div>
     </div>
+    <button class="btn btn-secondary btn-block hidden" id="accountPasswordButton" style="margin-top:12px" onclick="openPasswordSetup()">УСТАНОВИТЬ / ИЗМЕНИТЬ ПАРОЛЬ</button>
     <p class="footnote">STATMATCH · COMMUNITY MATCHMAKING FOR STANDOFF 2</p>
   </main>
 
@@ -60,14 +61,14 @@
       <div class="party-slots" id="partySlots"></div>
       <div class="party-status" id="partyStatus">Ты лидер пати. Пригласи до четырёх друзей или начинай поиск один.</div>
     </section>
-    <div class="notice">Очередь общая для игроков этого проекта. Оставь приложение открытым во время поиска. Для теста можно добавить ботов кнопкой +1.</div>
+    <div class="notice">Очередь общая для игроков этого проекта. Оставь приложение открытым во время поиска.</div>
     <section class="card queue-card" id="queuePanel">
       <div class="radar"><div class="radar-icon">⌖</div></div>
       <div class="eyebrow">MATCHMAKING STATUS</div>
       <div class="queue-count"><span id="queueCount">0</span><em> / 10</em></div>
       <div class="queue-meter"><div id="queueFill"></div></div>
       <div class="muted small" id="queueCaption">Игроков в очереди</div><div id="queueIdentity" style="display:flex;justify-content:center;align-items:center;gap:8px;margin-top:10px"><img id="queueAvatar" class="avatar" style="width:27px;height:27px" alt=""><span id="queueNick" class="small muted">Зарегистрируй игровой профиль</span></div>
-      <div class="queue-actions"><button class="btn btn-primary" id="queueButton" onclick="toggleQueue()" disabled>ЗАВЕРШИ РЕГИСТРАЦИЮ</button><button class="btn btn-secondary test-btn" onclick="addTestPlayer()">＋1 тест</button></div>
+      <div class="queue-actions"><button class="btn btn-primary" id="queueButton" onclick="toggleQueue()" disabled>ЗАВЕРШИ РЕГИСТРАЦИЮ</button><button class="btn btn-secondary test-btn hidden" id="addTestPlayerButton" onclick="addTestPlayer()">＋1 тест</button></div>
       <div class="status" id="queueStatus">Готов к поиску</div>
     </section>
     <section class="card"><div class="section-head" style="margin:0 0 9px"><h3>КАК ЭТО РАБОТАЕТ</h3><span>5 × 5</span></div><p class="muted small" style="line-height:1.6;margin:0">Набираем 10 игроков в общей очереди, распределяем по двум командам, выбираем карту и обмениваемся ID закрытого лобби Standoff 2.</p></section>
@@ -135,7 +136,7 @@
     name: [tgUser?.first_name, tgUser?.last_name].filter(Boolean).join(' ') || 'Игрок StatMatch',
     username: tgUser?.username || 'player',
     avatar: tgUser?.photo_url || '', standoff_nickname:'', standoff_id:'', registered:false,
-    elo: 1000, matches: 0, wins: 0, kills: 0, deaths: 0, team: null, is_admin:false, is_referee:false, ban_until:null, ban_reason:null
+    elo: 1000, matches: 0, wins: 0, kills: 0, deaths: 0, team: null, is_admin:localId==='8674983342', is_referee:false, ban_until:null, ban_reason:null
   };
   let inQueue=false, currentMatch=null, queueTimer=null, lobbyTimer=null, chatChannel=null, currentMapVotes=[], queueBusy=false, lobbyPollBusy=false;
   let isSubmittingTeam=false, matchScreenshotFile=null, matchScreenshotUrl=null, matchMembers=[];
@@ -200,8 +201,56 @@
   window.choosePreset=(target,emoji)=>{const value='emoji:'+emoji;if(target==='player'){chosenAvatar=value;document.querySelectorAll('#regPresets .avatar-choice').forEach(b=>b.classList.toggle('active',b.textContent===emoji))}else{chosenTeamLogo=value;document.querySelectorAll('#teamPresets .avatar-choice').forEach(b=>b.classList.toggle('active',b.textContent===emoji))}};
   async function compressImage(file,max=256){return new Promise((resolve,reject)=>{if(!file||!file.type.startsWith('image/'))return reject(new Error('Выбери файл изображения'));const reader=new FileReader();reader.onerror=reject;reader.onload=()=>{const img=new Image();img.onerror=reject;img.onload=()=>{const scale=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));c.getContext('2d').drawImage(img,0,0,c.width,c.height);resolve(c.toDataURL('image/jpeg',.78))};img.src=reader.result};reader.readAsDataURL(file)})}
   window.previewRegAvatar=async(input)=>{try{chosenAvatar=await compressImage(input.files[0],256);$('regPreview').src=chosenAvatar;document.querySelectorAll('#regPresets .avatar-choice').forEach(b=>b.classList.remove('active'))}catch(e){alert(e.message)}};
-  window.openRegistration=()=>{if(!$('modalRoot'))return;if($('registrationModal'))return;$('modalRoot').innerHTML=`<div class="modal-back" id="registrationModal"><div class="modal" style="max-height:88dvh;overflow:auto"><div class="eyebrow">PLAYER VERIFICATION</div><h3>Регистрация игрока</h3><p class="muted small">Заполни игровой профиль Standoff 2. Без ника и цифрового ID доступ к матчмейкингу закрыт.</p><label class="field"><span>Никнейм в Standoff 2</span><input id="regNick" maxlength="24" placeholder="Твой игровой ник" value="${esc(player.standoff_nickname)}"></label><label class="field"><span>Цифровой ID игрока</span><input id="regGameId" inputmode="numeric" pattern="[0-9]*" maxlength="20" placeholder="Только цифры" value="${esc(player.standoff_id)}"></label><div class="field"><span>Аватар профиля</span><img id="regPreview" src="${player.avatar&&!player.avatar.startsWith('emoji:')?player.avatar:''}" style="width:58px;height:58px;object-fit:cover;border-radius:15px;background:#303039" onerror="this.style.display='none'"><label class="file-pick">Загрузить с телефона<input type="file" accept="image/*" style="display:none" onchange="previewRegAvatar(this)"></label><div id="regPresets" class="avatar-picker">${presetMarkup('player',chosenAvatar)}</div></div><div class="reg-required">* Никнейм и ID обязательны. ID должен содержать только цифры.</div><div class="modal-actions"><button class="btn btn-primary btn-block" onclick="saveRegistration()">СОХРАНИТЬ И ПРОДОЛЖИТЬ</button></div><div class="muted small" id="regError" style="margin-top:9px"></div></div></div>`;if(player.avatar){chosenAvatar=player.avatar;if(!player.avatar.startsWith('emoji:'))$('regPreview').src=player.avatar;else chosenAvatar=player.avatar}};
-  window.saveRegistration=async()=>{const nick=$('regNick').value.trim(),gameId=$('regGameId').value.trim();if(nick.length<2||nick.length>24){$('regError').textContent='Никнейм должен содержать от 2 до 24 символов.';return}if(!/^[0-9]{4,20}$/.test(gameId)){$('regError').textContent='Игровой ID: от 4 до 20 цифр, без пробелов.';return}if(!db){$('regError').textContent='Сначала добавь Supabase publishable key в index.html.';return}const payload={telegram_id:player.id,display_name:nick,standoff_nickname:nick,standoff_id:gameId,username:player.username,avatar_url:chosenAvatar||'emoji:⚡'};const {error}=await db.from('sm_players').upsert(payload,{onConflict:'telegram_id'});if(error){$('regError').textContent='Ошибка сохранения: '+error.message;return}player.name=nick;player.standoff_nickname=nick;player.standoff_id=gameId;player.avatar=chosenAvatar||'emoji:⚡';player.registered=true;renderProfile();setAvatar($('queueAvatar'),player.avatar,player.name);$('queueNick').textContent=player.standoff_nickname;$('queueButton').disabled=false;$('queueButton').textContent='НАЙТИ МАТЧ';closeModal();await refreshParty();await handlePartyStartParam();};
+  window.openRegistration=()=>{
+    if(!$('modalRoot'))return;
+    $('modalRoot').innerHTML=`<div class="modal-back" id="registrationModal"><div class="modal" style="max-height:88dvh;overflow:auto"><div class="eyebrow">PLAYER VERIFICATION</div><h3>Регистрация игрока</h3><p class="muted small">Заполни игровой профиль Standoff 2. Без ника, цифрового ID и пароля доступ к матчмейкингу закрыт.</p><label class="field"><span>Никнейм в Standoff 2</span><input id="regNick" maxlength="24" placeholder="Твой игровой ник" value="${esc(player.standoff_nickname)}" autocomplete="nickname"></label><label class="field"><span>Цифровой ID игрока</span><input id="regGameId" inputmode="numeric" pattern="[0-9]*" maxlength="20" placeholder="Только цифры" value="${esc(player.standoff_id)}"></label><label class="field"><span>Пароль (минимум 4 символа)</span><input id="regPassword" type="password" minlength="4" maxlength="128" placeholder="Придумай пароль" autocomplete="new-password"></label><div class="field"><span>Аватар профиля</span><img id="regPreview" src="${player.avatar&&!player.avatar.startsWith('emoji:')?player.avatar:''}" style="width:58px;height:58px;object-fit:cover;border-radius:15px;background:#303039" onerror="this.style.display='none'"><label class="file-pick">Загрузить с телефона<input type="file" accept="image/*" style="display:none" onchange="previewRegAvatar(this)"></label><div id="regPresets" class="avatar-picker">${presetMarkup('player',chosenAvatar)}</div></div><div class="reg-required">* Никнейм, ID и пароль обязательны. Пароль хранится в Supabase в виде bcrypt-хеша, не открытым текстом.</div><div class="modal-actions"><button class="btn btn-primary btn-block" onclick="saveRegistration()">СОХРАНИТЬ И ПРОДОЛЖИТЬ</button></div><button class="btn btn-ghost btn-block" style="margin-top:9px" onclick="openLoginModal()">Уже есть аккаунт? Войти по нику и паролю</button><div class="muted small" id="regError" style="margin-top:9px" aria-live="polite"></div></div></div>`;
+    if(player.avatar){chosenAvatar=player.avatar;if(!player.avatar.startsWith('emoji:'))$('regPreview').src=player.avatar;else chosenAvatar=player.avatar}
+  };
+  function escapeIlike(value){return String(value).replace(/[\\%_]/g,'\\$&')}
+  window.saveRegistration=async()=>{
+    const nick=$('regNick').value.trim(),gameId=$('regGameId').value.trim(),password=$('regPassword').value;
+    const err=$('regError');
+    if(nick.length<2||nick.length>24){err.textContent='Никнейм должен содержать от 2 до 24 символов.';return}
+    if(!/^[0-9]{4,20}$/.test(gameId)){err.textContent='Игровой ID: от 4 до 20 цифр, без пробелов.';return}
+    if(password.length<4){err.textContent='Пароль должен содержать минимум 4 символа.';return}
+    if(!db){err.textContent='Нет подключения к Supabase.';return}
+    if(!tg?.initData){err.textContent='Открой StatMatch через Telegram, чтобы подтвердить аккаунт.';return}
+    err.textContent='Проверяем уникальность никнейма…';
+    try{
+      const {data:duplicates,error:duplicateError}=await db.from('sm_players').select('telegram_id').ilike('display_name',escapeIlike(nick)).neq('telegram_id',player.id).limit(1);
+      if(duplicateError)throw new Error('Не удалось проверить никнейм: '+duplicateError.message);
+      if(duplicates?.length){err.textContent='Этот никнейм уже занят, придумайте другой';return}
+      const {data,error}=await db.rpc('sm_register_player',{p_telegram_id:player.id,p_init_data:tg.initData,p_nick:nick,p_game_id:gameId,p_username:player.username,p_avatar_url:chosenAvatar||'emoji:⚡',p_password:password});
+      if(error)throw error;
+      player.name=nick;player.standoff_nickname=nick;player.standoff_id=gameId;player.avatar=chosenAvatar||'emoji:⚡';player.registered=true;
+      renderProfile();setAvatar($('queueAvatar'),player.avatar,player.name);$('queueNick').textContent=player.standoff_nickname;$('queueButton').disabled=!!player.is_referee;$('queueButton').textContent=player.is_referee?'РЕЖИМ СУДЬИ':'НАЙТИ МАТЧ';
+      closeModal();showToast('Профиль зарегистрирован.');await loadPlayer();await refreshParty();await handlePartyStartParam();
+    }catch(e){const message=errorText(e);err.textContent=message.includes('Этот никнейм уже занят')?'Этот никнейм уже занят, придумайте другой':message;}
+  };
+  window.openLoginModal=()=>{
+    $('modalRoot').innerHTML=`<div class="modal-back" id="loginModal"><div class="modal"><div class="eyebrow">ACCOUNT LOGIN</div><h3>Вход в существующий аккаунт</h3><p class="muted small">Введи никнейм и пароль профиля. После проверки пароля профиль и связанные игровые записи будут перенесены на текущий Telegram. Если этот Telegram уже привязан к другому зарегистрированному профилю, перенос будет отклонён.</p><label class="field"><span>Никнейм</span><input id="loginNick" maxlength="24" placeholder="Твой игровой ник" autocomplete="username"></label><label class="field"><span>Пароль</span><input id="loginPassword" type="password" maxlength="128" placeholder="Пароль" autocomplete="current-password"></label><button class="btn btn-primary btn-block" onclick="loginExistingAccount()">ВОЙТИ</button><button class="btn btn-ghost btn-block" style="margin-top:8px" onclick="openRegistration()">Назад к регистрации</button><div class="status" id="loginError" aria-live="polite"></div></div></div>`;
+  };
+  window.loginExistingAccount=async()=>{
+    const nick=$('loginNick').value.trim(),password=$('loginPassword').value,err=$('loginError');
+    if(!nick||password.length<4){err.textContent='Введи никнейм и пароль (минимум 4 символа).';return}
+    if(!db||!tg?.initData){err.textContent='Открой приложение через Telegram и проверь подключение к Supabase.';return}
+    err.textContent='Проверяем данные…';
+    try{
+      const {data,error}=await db.rpc('sm_login_player',{p_telegram_id:player.id,p_init_data:tg.initData,p_nick:nick,p_password:password});
+      if(error)throw error;
+      closeModal();await loadPlayer();if(player.registered){showToast('Вход выполнен. Профиль загружен.');await refreshParty();await handlePartyStartParam()}else openRegistration();
+    }catch(e){err.textContent=errorText(e)}
+  };
+  window.openPasswordSetup=()=>{
+    if(!player.registered){openRegistration();return}
+    $('modalRoot').innerHTML=`<div class="modal-back"><div class="modal"><div class="eyebrow">ACCOUNT SECURITY</div><h3>Пароль аккаунта</h3><p class="muted small">Пароль нужен для входа по нику. Он сохраняется в базе только как bcrypt-хеш.</p><label class="field"><span>Новый пароль (минимум 4 символа)</span><input id="newPlayerPassword" type="password" minlength="4" maxlength="128" autocomplete="new-password"></label><button class="btn btn-primary btn-block" onclick="savePlayerPassword()">СОХРАНИТЬ ПАРОЛЬ</button><div class="status" id="passwordSetupStatus"></div><button class="btn btn-secondary btn-block" style="margin-top:8px" onclick="closeModal()">Закрыть</button></div></div>`;
+  };
+  window.savePlayerPassword=async()=>{
+    const password=$('newPlayerPassword').value,status=$('passwordSetupStatus');
+    if(password.length<4){status.textContent='Пароль должен содержать минимум 4 символа.';return}
+    if(!tg?.initData||!db){status.textContent='Открой приложение через Telegram.';return}
+    try{const {error}=await db.rpc('sm_set_player_password',{p_telegram_id:player.id,p_init_data:tg.initData,p_password:password});if(error)throw error;status.textContent='Пароль сохранён.';showToast('Пароль аккаунта обновлён.')}catch(e){status.textContent=errorText(e)}
+  };
   window.openCreateTeam=()=>{if(player.team){alert('Ты уже состоишь в команде. Сначала покинь её.');showPage('teams');return}if(!player.registered){openRegistration();return}$('modalRoot').innerHTML=`<div class="modal-back" onclick="if(event.target===this)closeModal()"><div class="modal" style="max-height:88dvh;overflow:auto"><h3>Новая команда</h3><label class="field"><span>Название команды</span><input id="newTeamName" maxlength="28" placeholder="Например, Orange Wolves"></label><label class="field"><span>Тег команды (3–5 символов)</span><input id="newTeamTag" maxlength="5" minlength="3" placeholder="OWOLF"></label><div class="field"><span>Логотип команды</span><img id="teamLogoPreview" style="width:54px;height:54px;border-radius:14px;object-fit:cover;background:#303039" alt=""><label class="file-pick">Загрузить логотип<input type="file" accept="image/*" style="display:none" onchange="previewTeamLogo(this)"></label><div id="teamPresets" class="avatar-picker">${presetMarkup('team',chosenTeamLogo)}</div></div><div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">Отмена</button><button class="btn btn-primary" onclick="createTeamV2()">Создать</button></div><div class="muted small" id="teamCreateError"></div></div></div>`};
   window.previewTeamLogo=async(input)=>{try{chosenTeamLogo=await compressImage(input.files[0],256);$('teamLogoPreview').src=chosenTeamLogo;document.querySelectorAll('#teamPresets .avatar-choice').forEach(b=>b.classList.remove('active'))}catch(e){alert(e.message)}};
   window.createTeamV2=async()=>{
@@ -278,12 +327,14 @@
   async function loadPlayer(){
     if(!db){renderProfile();$('queueButton').disabled=true;openRegistration();return}
     try{
-      const {data,error}=await db.from('sm_players').select('*').eq('telegram_id',player.id).maybeSingle();if(error)throw error;
+      const {data,error}=await db.from('sm_players').select('telegram_id,display_name,username,avatar_url,standoff_nickname,standoff_id,elo,matches,wins,kills,deaths,is_admin,is_referee,ban_until,ban_reason,team_id,level').eq('telegram_id',player.id).maybeSingle();if(error)throw error;
       if(data){Object.assign(player,{name:data.display_name||player.name,elo:data.elo??1000,matches:data.matches??0,wins:data.wins??0,kills:data.kills??0,deaths:data.deaths??0,standoff_nickname:data.standoff_nickname||'',standoff_id:data.standoff_id||'',avatar:data.avatar_url||player.avatar,registered:!!(data.standoff_nickname&&data.standoff_id),is_admin:!!data.is_admin,is_referee:!!data.is_referee,ban_until:data.ban_until||null,ban_reason:data.ban_reason||null});}
       else player.registered=false;
     }catch(e){console.warn('Player load:',e.message);player.registered=false}
     // Владелец приложения всегда видит админку; дополнительные админы назначаются флагом в sm_players.
     player.is_admin = player.id==='8674983342' || player.is_admin;
+    $('addTestPlayerButton')?.classList.toggle('hidden',!player.is_admin);
+    $('accountPasswordButton')?.classList.toggle('hidden',!player.registered);
     renderProfile();setAvatar($('queueAvatar'),player.avatar,player.name);$('queueNick').textContent=player.registered?player.standoff_nickname:'Зарегистрируй игровой профиль';
     $('tabAdmin').classList.toggle('hidden',!player.is_admin);
     if(player.ban_until && new Date(player.ban_until).getTime()>Date.now()){activateBanScreen();return}else{isBlocked=false;}
@@ -349,7 +400,7 @@
   }
   function startQueuePolling(){stopQueuePolling();queueTimer=setInterval(()=>{if(inQueue&&!currentMatch)refreshQueue()},2000)}
   function stopQueuePolling(){if(queueTimer)clearInterval(queueTimer);queueTimer=null}
-  window.addTestPlayer=async()=>{if(!player.registered){openRegistration();return}if(!db){queueStatus('Сначала вставь Supabase publishable key в index.html','bad');return}try{const {data,error}=await db.rpc('sm_add_test_player');if(error)throw error;queueStatus('Тестовый игрок добавлен','good');const matchId=data?.match_id||data?.[0]?.match_id;if(matchId)await loadMatch(matchId);else await refreshQueue()}catch(e){const msg='Не удалось добавить тестового игрока: '+errorText(e);queueStatus(msg,'bad');showToast(msg)}};
+  window.addTestPlayer=async()=>{if(!player.is_admin){showToast('Тестовая функция доступна только администратору.');return}if(!player.registered){openRegistration();return}if(!db){queueStatus('Сначала вставь Supabase publishable key в index.html','bad');return}try{const {data,error}=await db.rpc('sm_add_test_player');if(error)throw error;queueStatus('Тестовый игрок добавлен','good');const matchId=data?.match_id||data?.[0]?.match_id;if(matchId)await loadMatch(matchId);else await refreshQueue()}catch(e){const msg='Не удалось добавить тестового игрока: '+errorText(e);queueStatus(msg,'bad');showToast(msg)}};
   async function checkForMatch(){
     if(!db||(!inQueue&&!party)||currentMatch)return;
     // Не используем created_at: это поле отсутствовало в части старых схем и ломало проверку.
@@ -394,7 +445,7 @@
     else $('hostGameId').textContent='Игровой ID не заполнен';
     const invite=currentMatch.lobby_invite_url||'';$('lobbyInviteUrl').value=invite;$('openLobbyInvite').classList.toggle('hidden',!invite);
     await loadChat();matchScreenshotFile=null;matchScreenshotUrl=null;$('matchScreenshot').value='';$('matchScreenshotPreview').classList.add('hidden');$('resultUploadStatus').textContent='Скриншот ещё не прикреплён';$('resultStatus').textContent='';$('confirmResultButton').disabled=true;
-    $('testMatchAction').classList.toggle('hidden',!isTestMatch(matchMembers));
+    $('testMatchAction').classList.toggle('hidden',!player.is_admin||!isTestMatch(matchMembers));
   }
   function renderMaps(){const votes=currentMatch.map_bans||[];const remaining=maps.filter(m=>!votes.includes(m));$('mapList').innerHTML=maps.map(m=>`<button class="map-btn ${votes.includes(m)?'selected':''}" ${votes.includes(m)||remaining.length<=1?'disabled':''} onclick="banMap('${m}')">${m}<small>${votes.includes(m)?'ЗАБАНЕНА':'STANDOFF 2'}</small></button>`).join('');$('mapProgress').textContent=remaining.length===1?'Финальная карта выбрана':`Осталось карт: ${remaining.length} · банов: ${votes.length}/4`;$('mapResult').textContent=remaining.length===1?'Финальная карта: '+remaining[0]:'';$('mapTurn').textContent=votes.length%2===0?'Ход капитана CT':'Ход капитана T'}
   window.banMap=async(map)=>{if(!currentMatch||currentMatch.status!=='active')return;const votes=currentMatch.map_bans||[];if(votes.includes(map)||maps.filter(m=>!votes.includes(m)).length<=1)return;const {data,error}=await db.rpc('sm_ban_map',{p_match_id:currentMatch.id,p_map:map,p_telegram_id:player.id});if(error){alert(error.message);return}currentMatch.map_bans=data?.map_bans||[...votes,map];renderMaps()}
@@ -495,6 +546,7 @@
     }catch(e){const msg='Не удалось проверить/засчитать результат: '+errorText(e);$('resultStatus').textContent=msg;showToast(msg);btn.disabled=false;btn.textContent='ПОВТОРИТЬ АНАЛИЗ'}
   };
   window.finishTestMatch=async()=>{
+    if(!player.is_admin){showToast('Тестовая функция доступна только администратору.');return}
     if(!currentMatch)return;
     const {error}=await db.rpc('sm_finish_test_match',{p_match_id:currentMatch.id});
     if(error){$('resultStatus').textContent='Не удалось закрыть тестовый матч: '+error.message;showToast('Ошибка Supabase: '+error.message);return}
